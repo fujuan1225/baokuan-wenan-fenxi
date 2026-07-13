@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版爆款文案分析看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .risk-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .risk-low { background: #28a745; }
+        .risk-medium { background: #ffc107; }
+        .risk-high { background: #dc3545; }
+
+        .template-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .template-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .template-description {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .filter-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            font-size: 0.9em;
+            color: #495057;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .prediction-score {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .score-high { background: #d4edda; color: #155724; }
+        .score-medium { background: #fff3cd; color: #856404; }
+        .score-low { background: #f8d7da; color: #721c24; }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .update-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ai-suggestion {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 增强版爆款文案分析看板</h1>
+            <div style="text-align: center; margin-top: 10px;">
+                <span class="update-indicator">
+                    <span class="spinner"></span>
+                    实时更新中...
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 数据源配置 -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="dataSource">数据源</label>
+                <select id="dataSource">
+                    <option value="excel">Excel本地文件</option>
+                    <option value="api">API接口</option>
+                    <option value="database">数据库</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="updateInterval">更新频率</label>
+                <select id="updateInterval">
+                    <option value="manual">手动更新</option>
+                    <option value="5">5分钟</option>
+                    <option value="15">15分钟</option>
+                    <option value="60">1小时</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="predictModel">预测模型</label>
+                <select id="predictModel">
+                    <option value="basic">基础模型</option>
+                    <option value="advanced">高级模型</option>
+                    <option value="ai">AI增强模型</option>
+                </select>
+            </div>
+            <div class="export-buttons">
+                <button class="btn btn-primary" onclick="exportPDF()">导出PDF报告</button>
+                <button class="btn btn-success" onclick="exportExcel()">导出Excel数据</button>
+                <button class="btn btn-primary" onclick="showSettings()">设置</button>
+            </div>
+        </div>
+
+        <!-- 实时数据概览 -->
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📊 实时数据概览</h2>
+                    <span class="badge badge-info">实时</span>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalContent">212</span>
+                        <span class="stat-label">总内容数</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="avgViews">1.6k</span>
+                        <span class="stat-label">平均播放</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="viralCount">165</span>
+                        <span class="stat-label">爆款数量</span>
+                    </div>
+                </div>
+                <div class="ai-suggestion">
+                    <div class="suggestion-title">AI建议</div>
+                    <div>基于当前数据趋势，建议增加"常见病合集"类内容，此类内容平均互动量比其他类型高35%。</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📈 预测分析</h2>
+                    <span class="badge badge-success">AI预测</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级分析 -->
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🔥 爆款内容预测</h2>
+                    <span class="badge badge-warning">新功能</span>
+                </div>
+                <div class="table-container">
+                    <table id="predictionTable">
+                        <thead>
+                            <tr>
+                                <th>预测标题</th>
+                                <th>预期互动量</th>
+                                <th>成功率</th>
+                                <th>风险等级</th>
+                                <th>优化建议</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚠️ 智能风险监控</h2>
+                    <span class="badge badge-danger">实时监控</span>
+                </div>
+                <div id="riskMonitor">
+                    <div style="margin-bottom: 15px;">
+                        <strong>当前风险评分：</strong> <span style="color: #28a745;">低风险 (3.2/10)</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>敏感词检测：</strong> 发现2个高风险词
+                    </div>
+                    <div>
+                        <strong>建议：</strong> 避免使用"特效药"等词汇，可改为"调理方法"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容创作助手 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">✍️ AI内容创作助手</h2>
+                <span class="badge badge-success">智能创作</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h3>输入内容参数</h3>
+                    <div style="margin: 15px 0;">
+                        <label>目标人群：</label>
+                        <select id="targetAudience">
+                            <option value="female_40">女性40+</option>
+                            <option value="male_40">男性40+</option>
+                            <option value="elderly">老年人</option>
+                            <option value="postpartum">产后女性</option>
+                        </select>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <label>疾病类型：</label>
+                        <select id="diseaseType">
+                            <option value="pain">疼痛类</option>
+                            <option value="common">常见病</option>
+                            <option value="chronic">慢性病</option>
+                        </select>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <label>创作风格：</label>
+                        <select id="contentStyle">
+                            <option value="authoritative">权威型</option>
+                            <option value="friendly">亲切型</option>
+                            <option value="urgent">紧迫型</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateContent()">生成内容</button>
+                </div>
+                <div>
+                    <h3>AI生成结果</h3>
+                    <div id="generatedContent" style="background: #f8f9fa; padding: 15px; border-radius: 8px; min-height: 150px;">
+                        <p style="color: #6c757d;">点击"生成内容"按钮，AI将基于您的参数创作爆款文案...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据来源追踪 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📊 数据来源追踪</h2>
+                <span class="badge badge-info">透明</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="dataSourceChart"></canvas>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9em; color: #6c757d;">
+                <p>最后更新时间：2026-07-08 13:45:32</p>
+                <p>数据来源：40个医生账号 | 4个平台 | 212条记录</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <h2>⚙️ 高级设置</h2>
+            <div style="margin-top: 20px;">
+                <h3>数据源配置</h3>
+                <div style="margin: 15px 0;">
+                    <label>Excel文件路径：</label>
+                    <input type="text" id="excelPath" value="/Users/xuxu/Desktop/工作簿1.xlsx" style="width: 100%; margin-top: 5px;">
+                </div>
+                <div style="margin: 15px 0;">
+                    <label>API接口URL：</label>
+                    <input type="text" id="apiUrl" placeholder="http://api.example.com/data" style="width: 100%; margin-top: 5px;">
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <h3>预测模型设置</h3>
+                <div style="margin: 15px 0;">
+                    <label>
+                        <input type="checkbox" id="useAdvancedModel" checked> 使用高级预测模型
+                    </label>
+                </div>
+                <div style="margin: 15px 0;">
+                    <label>
+                        <input type="checkbox" id="enableRiskPrediction" checked> 启用风险预测
+                    </label>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 预测数据
+        const predictionData = [
+            {title: "女性过了50，记好三个调理方法，改善全身不适", expected: "38万", success: "92%", risk: "low", suggestion: "可增加具体方法描述"},
+            {title: "八种慢性病中医调理方案", expected: "35万", success: "88%", risk: "medium", suggestion: "加入真实案例"},
+            {title: "男性过了45，这些小毛病不用过度治疗", expected: "30万", success: "85%", risk: "medium", suggestion: "避免'不用过度治疗'等敏感词"},
+            {title: "产后腰疼的真实原因和解决方案", expected: "28万", success: "90%", risk: "low", suggestion: "专业性提升"}
+        ];
+
+        // 填充预测表格
+        function populatePredictionTable() {
+            const tbody = document.querySelector('#predictionTable tbody');
+            tbody.innerHTML = '';
+
+            predictionData.forEach(item => {
+                const row = document.createElement('tr');
+                const riskClass = item.risk === 'low' ? 'score-high' : item.risk === 'medium' ? 'score-medium' : 'score-low';
+                const badgeClass = item.risk === 'low' ? 'badge-success' : item.risk === 'medium' ? 'badge-warning' : 'badge-danger';
+
+                row.innerHTML = `
+                    <td>${item.title}</td>
+                    <td><strong>${item.expected}</strong></td>
+                    <td><span class="prediction-score ${riskClass}">${item.success}</span></td>
+                    <td><span class="badge ${badgeClass}">${item.risk === 'low' ? '低风险' : item.risk === 'medium' ? '中风险' : '高风险'}</span></td>
+                    <td>${item.suggestion}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 创建预测图表
+        function createPredictionChart() {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['当前', '+1周', '+2周', '+3周', '+4周'],
+                    datasets: [{
+                        label: '预测爆款数量',
+                        data: [165, 180, 195, 210, 225],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: '平均互动量增长',
+                        data: [15800, 17000, 18200, 19500, 21000],
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建数据源图表
+        function createDataSourceChart() {
+            const ctx = document.getElementById('dataSourceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excel本地', 'API接口', '手动输入', '其他'],
+                    datasets: [{
+                        data: [60, 25, 10, 5],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5f7fa'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成内容
+        function generateContent() {
+            const audience = document.getElementById('targetAudience').value;
+            const disease = document.getElementById('diseaseType').value;
+            const style = document.getElementById('contentStyle').value;
+
+            const templates = {
+                female_40: {
+                    pain: "女性过了40岁，腰疼腿疼肩膀疼，记住这几种调理方法",
+                    common: "女性40+常见病清单，中医教你如何预防",
+                    chronic: "女性慢性病调理，越早知道越好"
+                },
+                male_40: {
+                    pain: "男人过了40岁，浑身疼痛不用愁，记住这些方子",
+                    common: "中年男性常见健康问题，中医调理指南",
+                    chronic: "男性慢性病管理，从中医开始"
+                }
+            };
+
+            const generatedTitle = templates[audience][disease];
+            const contentDiv = document.getElementById('generatedContent');
+            contentDiv.innerHTML = `
+                <h4>🎯 生成标题</h4>
+                <p style="font-size: 1.1em; font-weight: 600; margin: 10px 0;">${generatedTitle}</p>
+                <h4>📝 内容建议</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>开头描述痛点，引发共鸣</li>
+                    <li>中间给出3-5个具体解决方案</li>
+                    <li>结尾强调"不需要过度治疗"</li>
+                    <li>加入1-2个真实案例</li>
+                </ul>
+                <h4>⚠️ 风险评估</h4>
+                <p style="color: #28a745;">风险评分：低（7.5/10）</p>
+                <p>建议可以放心发布，预期互动量：25万+</p>
+            `;
+        }
+
+        // 导出PDF
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(20);
+            doc.text('爆款文案分析报告', 20, 20);
+
+            doc.setFontSize(12);
+            doc.text('生成时间：' + new Date().toLocaleString(), 20, 35);
+
+            doc.text('总内容数：212条', 20, 50);
+            doc.text('爆款数量：165条', 20, 65);
+            doc.text('平均互动量：15,834', 20, 80);
+
+            doc.text('TOP3爆款内容：', 20, 95);
+            doc.text('1. 男人过了45，记好三个亲民药 - 46万互动', 25, 110);
+            doc.text('2. 八种常见病 中医教你调 - 35万互动', 25, 125);
+            doc.text('3. 女性过了40，记好两个福利药 - 29万互动', 25, 140);
+
+            doc.save('爆款文案分析报告.pdf');
+        }
+
+        // 导出Excel
+        function exportExcel() {
+            const ws = XLSX.utils.json_to_sheet([
+                {指标: '总内容数', 数值: 212},
+                {指标: '爆款数量', 数值: 165},
+                {指标: '平均播放量', 数值: 1583},
+                {指标: '平均互动量', 数值: 15834},
+                {指标: '最高互动量', 数值: 459920}
+            ]);
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "数据概览");
+            XLSX.writeFile(wb, '爆款文案分析数据.xlsx');
+        }
+
+        // 显示设置
+        function showSettings() {
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        // 关闭设置
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        // 保存设置
+        function saveSettings() {
+            const excelPath = document.getElementById('excelPath').value;
+            const apiUrl = document.getElementById('apiUrl').value;
+            const useAdvancedModel = document.getElementById('useAdvancedModel').checked;
+
+            console.log('保存设置:', {excelPath, apiUrl, useAdvancedModel});
+            alert('设置已保存！');
+            closeSettings();
+        }
+
+        // 模拟实时更新
+        function simulateRealtimeUpdate() {
+            setInterval(() => {
+                // 更新数据
+                const totalContent = document.getElementById('totalContent');
+                const current = parseInt(totalContent.textContent);
+                totalContent.textContent = current + Math.floor(Math.random() * 3);
+
+                // 更新时间
+                const updateTime = document.querySelector('.update-indicator');
+                const now = new Date();
+                updateTime.innerHTML = `
+                    <span class="spinner"></span>
+                    最后更新：${now.toLocaleTimeString()}
+                `;
+            }, 30000); // 每30秒更新一次
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            populatePredictionTable();
+            createPredictionChart();
+            createDataSourceChart();
+            simulateRealtimeUpdate();
+        });
+
+        // 监听设置变化
+        document.getElementById('updateInterval').addEventListener('change', function() {
+            const interval = this.value;
+            console.log('更新间隔设置为：', interval + '分钟');
+        });
+
+        document.getElementById('predictModel').addEventListener('change', function() {
+            const model = this.value;
+            console.log('预测模型切换为：', model);
+        });
+    </script>
+</body>
+</html>

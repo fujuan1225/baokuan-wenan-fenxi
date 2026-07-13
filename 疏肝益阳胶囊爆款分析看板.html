@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>疏肝益阳胶囊 · 爆款文案分析看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg:#f5f0ed; --card:#fffbf9; --primary:#c0392b; --primary-dark:#a93226;
+    --secondary:#8b0000; --accent:#d4a574; --success:#27ae60; --warning:#e67e22; --danger:#c0392b;
+    --info:#2980b9; --text:#2c1810; --text2:#8b7355; --border:#e8d5c4;
+    --shadow:0 1px 3px rgba(44,24,16,0.06); --shadow-hover:0 4px 12px rgba(44,24,16,0.12);
+    --radius:12px; --trans:0.2s ease;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+.container{max-width:1560px;margin:0 auto;padding:16px 20px;}
+
+header{background:linear-gradient(135deg,#1a0a0a 0%,#3d1111 50%,#1a0a0a 100%);color:white;padding:24px 0 18px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,0.2);position:relative;overflow:hidden;}
+header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent),var(--primary));background-size:200% 100%;animation:glow 3s ease infinite;}
+@keyframes glow{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+header h1{text-align:center;font-size:1.8em;font-weight:700;letter-spacing:0.02em;}
+header .sub{text-align:center;font-size:0.85em;color:#b89b8b;margin-top:4px;}
+
+.tab-nav{display:flex;gap:4px;background:var(--card);border-radius:var(--radius);padding:5px;margin-bottom:16px;box-shadow:var(--shadow);overflow-x:auto;}
+.tab-btn{padding:10px 20px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:0.88em;font-weight:600;color:var(--text2);white-space:nowrap;transition:var(--trans);}
+.tab-btn:hover{background:#fdf2ec;color:var(--primary);}
+.tab-btn.active{background:var(--primary);color:white;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+.card{background:var(--card);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow);transition:var(--trans);margin-bottom:16px;}
+.card:hover{box-shadow:var(--shadow-hover);}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--border);}
+.card-tt{font-size:1.08em;font-weight:700;display:flex;align-items:center;gap:8px;}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75em;font-weight:600;}
+.badge-big{background:#fdebd0;color:#b9770e;}
+.badge-mid{background:#fadbd8;color:#922b21;}
+.badge-sml{background:#d5f5e3;color:#1e8449;}
+.badge-norm{background:#eaecee;color:#7f8c8d;}
+.badge-danger{background:#fadbd8;color:#922b21;}
+
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.grid13{display:grid;grid-template-columns:1fr 3fr;gap:16px;margin-bottom:16px;}
+.grid31{display:grid;grid-template-columns:3fr 1fr;gap:16px;margin-bottom:16px;}
+
+.stat-val{font-size:1.8em;font-weight:800;line-height:1.2;}
+.stat-lbl{font-size:0.78em;color:var(--text2);margin-top:2px;}
+.stat-sub{font-size:0.73em;margin-top:2px;}
+.clr-red{color:var(--primary);}
+.clr-org{color:var(--warning);}
+.clr-grn{color:var(--success);}
+.clr-blu{color:var(--info);}
+
+.chart-wrap{position:relative;height:300px;width:100%;}
+.chart-wrap.tall{height:380px;}
+.chart-wrap.xtall{height:440px;}
+
+.tbl-wrap{max-height:400px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:0.85em;}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+th{background:#fdf8f4;font-weight:600;color:var(--text2);position:sticky;top:0;z-index:1;font-size:0.8em;text-transform:uppercase;letter-spacing:0.03em;}
+tr:hover td{background:#fef9f5;}
+
+.tier-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;}
+.tier-big{background:#c0392b;}
+.tier-mid{background:#e67e22;}
+.tier-sml{background:#27ae60;}
+.tier-norm{background:#bdc3c7;}
+
+.insight{background:linear-gradient(135deg,#fef9f5 0%,#fdf2ec 100%);border-radius:10px;padding:16px 20px;margin-bottom:12px;border:1px solid #f0d9c8;}
+.insight.strong{background:linear-gradient(135deg,#fdedec 0%,#fadbd8 100%);border-color:#f5b7b1;}
+.insight .ins-tt{font-weight:700;margin-bottom:4px;}
+.insight .ins-txt{font-size:0.85em;color:var(--text2);}
+
+.rule-card{display:flex;gap:12px;padding:14px;background:var(--card);border-radius:10px;margin-bottom:8px;border:1px solid var(--border);align-items:flex-start;transition:var(--trans);}
+.rule-card:hover{transform:translateX(4px);box-shadow:var(--shadow-hover);}
+.rule-icon{font-size:1.5em;flex-shrink:0;}
+.rule-body{flex:1;}
+.rule-tt{font-weight:700;margin-bottom:3px;font-size:0.95em;}
+.rule-desc{font-size:0.83em;color:var(--text2);}
+.rule-stat{font-size:0.78em;color:var(--primary);font-weight:600;margin-top:3px;}
+
+.kw-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.78em;font-weight:500;margin:2px;cursor:default;}
+.kw-up{background:#d5f5e3;color:#1e8449;}
+.kw-down{background:#fadbd8;color:#922b21;}
+.kw-neutral{background:#eaecee;color:#7f8c8d;}
+
+select,input[type="text"],textarea{
+    padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+    font-size:0.88em;background:#fffbf9;transition:var(--trans);font-family:inherit;
+}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(192,57,43,0.12);}
+textarea{resize:vertical;line-height:1.7;}
+
+.btn{padding:9px 18px;border:none;border-radius:8px;font-size:0.85em;font-weight:600;cursor:pointer;transition:var(--trans);white-space:nowrap;}
+.btn-red{background:var(--primary);color:white;}
+.btn-red:hover{background:var(--primary-dark);}
+.btn-out{background:transparent;border:2px solid var(--primary);color:var(--primary);}
+.btn-out:hover{background:var(--primary);color:white;}
+.btn-sm{padding:5px 12px;font-size:0.75em;}
+
+.gen-result{background:linear-gradient(135deg,#fef9f5,#fdf2ec);border-radius:12px;padding:20px;margin-top:14px;border:2px solid var(--accent);}
+.gen-title{font-size:1.2em;font-weight:700;color:var(--primary);margin-bottom:4px;}
+.gen-score{font-size:1em;font-weight:600;}
+.gen-script{background:white;padding:16px;border-radius:8px;margin-top:10px;font-size:0.9em;line-height:1.8;white-space:pre-wrap;border:1px solid var(--border);}
+.gen-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:0.82em;}
+
+.filter-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;}
+.filter-row .fg{display:flex;flex-direction:column;gap:4px;}
+.filter-row .fg label{font-weight:600;font-size:0.8em;color:var(--text2);}
+
+@media(max-width:1100px){.grid2,.grid3,.grid13,.grid31{grid-template-columns:1fr;}.grid4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.grid4{grid-template-columns:1fr;}.tab-btn{padding:8px 12px;font-size:0.8em;}}
+</style>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>💊 疏肝益阳胶囊 · 爆款文案分析看板</h1>
+<div class="sub">349条真实投放数据 · 三级爆款分类 · 规律挖掘 · AI文案生成</div>
+</div>
+</header>
+
+<div class="container">
+<!-- Tab Nav -->
+<div class="tab-nav" id="tabNav">
+<button class="tab-btn active" data-tab="overview">📊 爆款总览</button>
+<button class="tab-btn" data-tab="upgrade">📈 进阶规律</button>
+<button class="tab-btn" data-tab="compare">⚖️ 多维对比</button>
+<button class="tab-btn" data-tab="generate">✍️ AI生成器</button>
+<button class="tab-btn" data-tab="risk">🚨 合规风控</button>
+</div>
+
+<!-- ===== TAB 1: 爆款总览 ===== -->
+<div class="tab-content active" id="tab-overview">
+<div class="grid4">
+<div class="card" style="text-align:center;"><div class="stat-val clr-red">11</div><div class="stat-lbl">🔥🔥🔥 大爆款 ≥100w</div><div class="stat-sub">占比 3.2%</div></div>
+<div class="card" style="text-align:center;"><div class="stat-val clr-org">4</div><div class="stat-lbl">🔥🔥 中爆款 50-100w</div><div class="stat-sub">占比 1.1%</div></div>
+<div class="card" style="text-align:center;"><div class="stat-val clr-grn">294</div><div class="stat-lbl">🔥 小爆款 10-50w</div><div class="stat-sub">占比 84.2%</div></div>
+<div class="card" style="text-align:center;"><div class="stat-val" style="color:#7f8c8d;">40</div><div class="stat-lbl">➖ 普通 <10w</div><div class="stat-sub">占比 11.5%</div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="card-hd"><h2 class="card-tt">🔺 三级爆款金字塔</h2><span class="badge badge-big">分布</span></div><div class="chart-wrap tall"><canvas id="pyramidChart"></canvas></div></div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">📐 形式 × 爆款等级矩阵</h2><span class="badge badge-mid">核心规律</span></div><div class="chart-wrap tall"><canvas id="formMatrixChart"></canvas></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="card-hd"><h2 class="card-tt">🏆 大爆款TOP11 解剖</h2><span class="badge badge-big">逐条分析</span></div><div class="tbl-wrap" id="topViralTable"></div></div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">🎣 开头Hook × 爆款等级</h2><span class="badge badge-mid">关键因子</span></div><div class="chart-wrap tall"><canvas id="hookChart"></canvas></div></div>
+</div>
+<div class="grid3">
+<div class="insight strong"><div class="ins-tt">💎 大爆款第一定律</div><div class="ins-txt"><strong>精液异常型开头</strong>大爆款率高达40%（2/5条），均播放113.6w。"流出来不是射出来"是已验证的最强Hook。</div></div>
+<div class="insight"><div class="ins-tt">📊 图文形式 = 大爆款加速器</div><div class="ins-txt">图文仅8条，<strong>37.5%达大爆款</strong>（3/8），均播放88.7w。图文+数据冲击+反常识=大爆款公式。</div></div>
+<div class="insight"><div class="ins-tt">⚠️ 硬度问题 = 量大但难升级</div><div class="ins-txt">125条硬度类开头，仅2条大爆款(1.6%)。竞争激烈，需搭配其他升级因子才能突围。</div></div>
+</div>
+</div>
+
+<!-- ===== TAB 2: 进阶规律 ===== -->
+<div class="tab-content" id="tab-upgrade">
+<div class="grid2">
+<div class="card"><div class="card-hd"><h2 class="card-tt">🪜 小→中→大 升级路径</h2><span class="badge badge-big">核心</span></div><div class="chart-wrap xtall"><canvas id="upgradePathChart"></canvas></div></div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">🔑 关键词升级效力排行</h2><span class="badge badge-mid">词级规律</span></div><div style="max-height:440px;overflow-y:auto;" id="keywordFactorList"></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="card-hd"><h2 class="card-tt">📏 文案长度 × 爆款等级</h2><span class="badge badge-big">长度规律</span></div><div class="chart-wrap tall"><canvas id="lengthTierChart"></canvas></div></div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">📋 进阶规律总结</h2><span class="badge badge-mid">行动指南</span></div><div id="upgradeRules"></div></div>
+</div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">🔬 大爆款文案全文解剖</h2><span class="badge badge-big">TOP5逐帧分析</span></div><div id="dissectionArea"></div></div>
+</div>
+
+<!-- ===== TAB 3: 多维对比 ===== -->
+<div class="tab-content" id="tab-compare">
+<div class="grid2">
+<div class="card"><div class="card-hd"><h2 class="card-tt">🎯 大爆款 vs 普通 雷达图</h2><span class="badge badge-big">全维度</span></div><div class="chart-wrap xtall"><canvas id="radarChart"></canvas></div></div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">📊 三级爆款 各维度量化对比</h2><span class="badge badge-mid">差异表</span></div><div class="tbl-wrap" id="compareTable"></div></div>
+</div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">📈 达人 × 爆款等级 分布</h2><span class="badge badge-big">达人分析</span></div><div class="chart-wrap tall"><canvas id="authorChart"></canvas></div></div>
+</div>
+
+<!-- ===== TAB 4: AI生成器 ===== -->
+<div class="tab-content" id="tab-generate">
+<div class="grid13">
+<div class="card">
+<div class="card-hd"><h2 class="card-tt">🎛️ 创作参数</h2></div>
+<div class="filter-row" style="flex-direction:column;gap:12px;">
+<div class="fg" style="width:100%;"><label>📐 内容形式</label><select id="genForm"><option value="图文">图文 (大爆款率最高 37.5%)</option><option value="抽纸演绎">抽纸演绎 (稳定产出 9.1%)</option><option value="口播文案" selected>口播文案 (主流量 200条)</option><option value="手势舞">手势舞 (100%小爆款)</option></select></div>
+<div class="fg" style="width:100%;"><label>🎣 开头Hook</label><select id="genHook"><option value="精液异常">精液异常型 ⭐ 最强Hook (40%大爆款)</option><option value="时间/早泄">时间/早泄型 (10%大爆款)</option><option value="硬度/勃起">硬度/勃起型 (量大稳定)</option><option value="频率/手淫">频率/手淫型 (升级因子强)</option><option value="疑问反问">疑问反问型 (均播18.6w)</option></select></div>
+<div class="fg" style="width:100%;"><label>🎯 目标爆款等级</label><select id="genTarget"><option value="big">冲大爆款 (100w+) — 激进策略</option><option value="mid">稳中爆款 (50w+) — 平衡策略</option><option value="small" selected>保小爆款 (10w+) — 安全策略</option></select></div>
+<div class="fg" style="width:100%;"><label>🛡️ 合规级别</label><select id="genRisk"><option value="safe">安全优先 (药物暗示最少)</option><option value="balanced" selected>平衡 (适度的产品提及)</option><option value="aggressive">激进 (最大化转化)</option></select></div>
+<div class="fg" style="width:100%;"><label>📝 额外指令 (可选)</label><input type="text" id="genExtra" placeholder="如：强调补肾、加入真实案例、控制200字内..."></div>
+<button class="btn btn-red" onclick="generateCopy()" style="width:100%;margin-top:4px;font-size:1em;">🚀 生成文案</button>
+</div>
+</div>
+<div class="card" id="genOutputCard">
+<div class="card-hd"><h2 class="card-tt">📝 生成结果</h2><span class="badge badge-big">AI创作</span></div>
+<div id="genOutput" style="color:var(--text2);text-align:center;padding:40px 0;">
+<div style="font-size:3em;margin-bottom:12px;">✍️</div>
+<div>选择左侧参数，点击「生成文案」</div>
+<div style="font-size:0.82em;margin-top:6px;">基于349条真实数据训练的规律模型</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== TAB 5: 合规风控 ===== -->
+<div class="tab-content" id="tab-risk">
+<div class="grid2">
+<div class="card"><div class="card-hd"><h2 class="card-tt">🚨 敏感词风险分级</h2><span class="badge badge-danger">词汇库</span></div><div id="riskWordPyramid"></div></div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">🔍 文案合规检测器</h2><span class="badge badge-danger">粘贴检测</span></div>
+<textarea id="riskCheckInput" placeholder="粘贴文案，检测合规风险..." style="width:100%;height:120px;margin-bottom:8px;"></textarea>
+<button class="btn btn-red btn-sm" onclick="checkRisk()">🔍 检测风险</button>
+<div id="riskCheckResult" style="margin-top:12px;"></div></div>
+</div>
+<div class="card"><div class="card-hd"><h2 class="card-tt">📋 限流模式 & 规避策略</h2><span class="badge badge-mid">实战技巧</span></div><div class="grid2" style="margin-bottom:0;" id="avoidanceTips"></div></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ==================== DATA ====================
+const TOP_VIRAL=[{rank:1,views:"490w",达人:"中医平平医生",形式:"抽纸演绎",开头:"进入就想she，记住这两个...",开头类型:"时间/早泄",hook:"进入就想she",升级因子:["具体场景","数字冲击"],文案摘要:"标题进入就想she+记住这两个调理方法+疏肝益阳胶囊+利多卡因凝胶"},{rank:2,views:"361w",达人:"爱科普的小李",形式:"口播文案",开头:"一天手淫3、4次的男人，精液是流出来的，而不是射出来的...",开头类型:"精液异常",hook:"精液是流出来的",升级因子:["精液异常","频率数字","反常识观点"],文案摘要:"手淫频繁+精液流出+不要吃生蚝猪腰+越吃越虚+白开水搭一物+疏肝益阳胶囊"},{rank:3,views:"276w",达人:"爱科普的小李",形式:"口播文案",开头:"阴茎硬不起来，动几下就软，记好白开水搭一物...",开头类型:"硬度/勃起",hook:"白开水搭一物",升级因子:["成本几块钱","人人喝得起","藏着不说"],文案摘要:"硬度不够+白开水搭一物+成本几块钱+疏肝益阳胶囊+活血补肾疏肝解郁"},{rank:4,views:"267w",达人:"大翠说药",形式:"图文",开头:"优秀的时长一般是多久呢？别被小电影误导了...",开头类型:"疑问反问",hook:"别被小电影误导",升级因子:["反常识","数据纠正","图文形式"],文案摘要:"时长误区+3-10分钟正常+别被小电影误导+疏肝益阳胶囊调理"},{rank:5,views:"186w",达人:"小莉姐药健康",形式:"图文",开头:"别被小电影误导了...",开头类型:"疑问反问",hook:"别被小电影误导",升级因子:["反常识","图文形式"],文案摘要:"别被小电影误导+硬度时间真相+疏肝益阳调理方案"},{rank:6,views:"161w",达人:"丁一郎医生",形式:"视频号",开头:"一晚上射精2、3次...",开头类型:"时间/早泄",hook:"一晚上射精2、3次",升级因子:["频率数字","场景冲击"],文案摘要:"频繁射精+身体透支+疏肝益阳胶囊调理+补肾活血"},{rank:7,views:"158w",达人:"琉璃医生",形式:"口播文案",开头:"一天手淫四五次的男人，精液是流出来的，而不是射出来的...",开头类型:"精液异常",hook:"精液是流出来的",升级因子:["精液异常","频率数字","压箱底好物"],文案摘要:"手淫频繁+精液流出+压箱底好物+医生朋友私下用+疏肝益阳胶囊"},{rank:8,views:"152w",达人:"蓉蓉医生",形式:"抽纸演绎",开头:"用手扶着才能进去，还没抽动两下就泄了...",开头类型:"硬度/勃起",hook:"扶着才能进去",升级因子:["具体场景画面","抽纸演绎"],文案摘要:"硬度不够+扶着进入+两下就泄+疏肝益阳胶囊调理"},{rank:9,views:"115w",达人:"丽莉说中医",形式:"图文",开头:"别再让小电影误导了...",开头类型:"疑问反问",hook:"别再被误导",升级因子:["反常识","图文形式"],文案摘要:"小电影误导+真实时长数据+疏肝益阳调理"},{rank:10,views:"108w",达人:"药师邓翠婷",形式:"抽纸演绎",开头:"大尺寸阴茎会更满足吗...",开头类型:"疑问反问",hook:"大尺寸更满足吗",升级因子:["反常识","疑问开头"],文案摘要:"尺寸误区+真实需求+疏肝益阳胶囊+硬度比尺寸重要"},{rank:11,views:"100w",达人:"爱科普的小李",形式:"抽纸演绎",开头:"硬度不够，软到进不去...",开头类型:"硬度/勃起",hook:"软到进不去",升级因子:["硬度画面","抽纸演绎"],文案摘要:"硬度不够+进不去+疏肝益阳胶囊+活血补肾"}];
+
+const KEYWORD_FACTORS=[{word:"手淫",bigLift:5.3,midLift:2.1,action:"强力升级因子",type:"up"},{word:"女生",bigLift:3.9,midLift:1.8,action:"女性视角差异化",type:"up"},{word:"一天",bigLift:2.6,midLift:1.5,action:"频率时间锚定",type:"up"},{word:"流出来",bigLift:2.8,midLift:1.6,action:"精液异常Hook",type:"up"},{word:"用手",bigLift:1.7,midLift:1.3,action:"行为具体化",type:"up"},{word:"几块钱",bigLift:1.8,midLift:1.3,action:"低成本认知",type:"up"},{word:"过度",bigLift:1.6,midLift:1.2,action:"严重性暗示",type:"up"},{word:"藏",bigLift:1.6,midLift:1.2,action:"揭秘感",type:"up"},{word:"别",bigLift:1.5,midLift:1.4,action:"反常识否定词",type:"up"},{word:"泄",bigLift:1.5,midLift:1.1,action:"早泄场景强化",type:"up"},{word:"射",bigLift:1.5,midLift:1.0,action:"精确描述增强真实感",type:"up"},{word:"男性",bigLift:1.5,midLift:1.2,action:"正式称谓优于'男人'",type:"up"},{word:"偷偷",bigLift:1.4,midLift:1.2,action:"稀缺感营造",type:"up"},{word:"记好",bigLift:0.6,midLift:0.9,action:"通用词，需搭配升级因子",type:"down"},{word:"男人",bigLift:0.4,midLift:0.8,action:"建议改用'男性'",type:"down"},{word:"实用",bigLift:0.3,midLift:0.7,action:"弱化词，删除或替换",type:"down"},{word:"方法",bigLift:0.4,midLift:0.7,action:"过于通用，改用具体方案",type:"down"},{word:"知道",bigLift:0.3,midLift:0.6,action:"消除信息不对称暗示",type:"down"}];
+
+const RISK_WORDS={high:[{word:"特效药",alt:"调理方案"},{word:"根治",alt:"改善"},{word:"包治",alt:"适用于"},{word:"断根",alt:"缓解"},{word:"秘方",alt:"经验方"},{word:"神药",alt:"好物"}],medium:[{word:"福利药",alt:"调理方法"},{word:"平价药",alt:"实惠好物"},{word:"王牌搭配",alt:"经典搭配"},{word:"救命",alt:"关键"},{word:"不敢说",alt:"很少讲"},{word:"不公开",alt:"不常提"},{word:"藏起来",alt:"不容易找到"}],safe:["调理","养护","改善","缓解","好物","经典搭配","经验分享","日常养护","中医调理","参考"]};
+
+const HOOK_STATS=[{name:"精液异常",count:5,big:2,mid:0,sml:3,avg:113.6,bigRate:40},{name:"时间/早泄",count:10,big:1,mid:1,sml:7,avg:33.5,bigRate:10},{name:"方案/方法引导",count:26,big:1,mid:0,sml:21,avg:30.7,bigRate:3.8},{name:"疑问反问",count:38,big:1,mid:0,sml:30,avg:18.6,bigRate:2.6},{name:"硬度/勃起",count:125,big:2,mid:1,sml:104,avg:12.8,bigRate:1.6},{name:"手淫/频率",count:6,big:0,mid:0,sml:6,avg:13.9,bigRate:0},{name:"女性/两性",count:6,big:0,mid:0,sml:6,avg:10.6,bigRate:0},{name:"男性年龄定位",count:44,big:0,mid:0,sml:35,avg:9.7,bigRate:0}];
+
+const FORM_STATS=[{name:"图文",count:8,big:3,mid:0,sml:5,avg:88.7,bigRate:37.5},{name:"抽纸演绎",count:44,big:4,mid:2,sml:36,avg:34.3,bigRate:9.1},{name:"视频号",count:40,big:1,mid:1,sml:18,avg:18.7,bigRate:2.5},{name:"口播文案",count:200,big:3,mid:0,sml:186,avg:13.7,bigRate:1.5},{name:"手势舞",count:22,big:0,mid:0,sml:22,avg:11.1,bigRate:0},{name:"洗手演绎",count:4,big:0,mid:0,sml:4,avg:10.0,bigRate:0}];
+
+const LENGTH_STATS=[{range:"<150字",count:53,big:3,mid:3,sml:45,avg:21.7},{range:"150-250字",count:220,big:5,mid:1,sml:182,avg:16.2},{range:"250-350字",count:72,big:2,mid:0,sml:64,avg:18.4},{range:">350字",count:4,big:1,mid:0,sml:3,avg:75.7}];
+
+// ==================== HELPERS ====================
+const charts={};
+function safeChart(id,fn){
+try{var c=document.getElementById(id);if(!c)return;var ctx=c.getContext('2d');if(!ctx||c.clientWidth===0)return;if(charts[id]){try{charts[id].destroy();}catch(e){}}
+charts[id]=fn(ctx);}catch(e){console.warn('Chart '+id+':',e.message);}
+}
+
+// ==================== TAB SWITCHING ====================
+(function(){
+var btns=document.querySelectorAll('#tabNav .tab-btn');
+btns.forEach(function(b){
+b.addEventListener('click',function(){
+btns.forEach(function(x){x.classList.remove('active');});
+b.classList.add('active');
+var tabs=document.querySelectorAll('.tab-content');
+tabs.forEach(function(t){t.classList.remove('active');});
+var target=document.getElementById('tab-'+b.dataset.tab);
+if(target)target.classList.add('active');
+// Render charts for the newly visible tab
+var tab=b.dataset.tab;
+setTimeout(function(){
+if(tab==='overview')renderOverviewCharts();
+if(tab==='upgrade')renderUpgradeCharts();
+if(tab==='compare')renderCompareCharts();
+},200);
+});
+});
+})();
+
+// ==================== TAB 1: OVERVIEW ====================
+function renderTopViralTable(){
+var c=document.getElementById('topViralTable');if(!c)return;
+var h='<table><thead><tr><th>#</th><th>播放</th><th>达人</th><th>形式</th><th>开头Hook</th><th>升级因子</th></tr></thead><tbody>';
+TOP_VIRAL.forEach(function(v){
+h+='<tr><td><strong style="color:#c0392b;">#'+v.rank+'</strong></td><td><strong>'+v.views+'</strong></td><td>'+v.达人+'</td><td><span class="badge badge-big">'+v.形式+'</span></td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+v.hook+'">'+v.hook+'</td><td>'+v.升级因子.map(function(f){return'<span class="kw-tag kw-up">'+f+'</span>';}).join('')+'</td></tr>';
+});
+h+='</tbody></table>';c.innerHTML=h;
+}
+
+function renderOverviewCharts(){
+safeChart('pyramidChart',function(ctx){return new Chart(ctx,{type:'bar',data:{labels:['大爆款\n≥100w','中爆款\n50-100w','小爆款\n10-50w','普通\n<10w'],datasets:[{data:[11,4,294,40],backgroundColor:['#c0392b','#e67e22','#27ae60','#bdc3c7'],borderRadius:6,barThickness:50}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.raw+'条 ('+(ctx.raw/349*100).toFixed(1)+'%)';}}}},scales:{x:{title:{display:true,text:'内容数量'}}}}});});
+safeChart('formMatrixChart',function(ctx){return new Chart(ctx,{type:'bar',data:{labels:FORM_STATS.map(function(f){return f.name;}),datasets:[{label:'大爆款',data:FORM_STATS.map(function(f){return f.big;}),backgroundColor:'#c0392b',borderRadius:4},{label:'中爆款',data:FORM_STATS.map(function(f){return f.mid;}),backgroundColor:'#e67e22',borderRadius:4},{label:'小爆款',data:FORM_STATS.map(function(f){return f.sml;}),backgroundColor:'#27ae60',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,title:{display:true,text:'条数'}}}}});});
+safeChart('hookChart',function(ctx){return new Chart(ctx,{type:'bar',data:{labels:HOOK_STATS.map(function(h){return h.name;}),datasets:[{label:'大爆款数',data:HOOK_STATS.map(function(h){return h.big;}),backgroundColor:'#c0392b',borderRadius:4,yAxisID:'y'},{label:'均播放(万)',data:HOOK_STATS.map(function(h){return h.avg;}),backgroundColor:'rgba(212,165,116,0.7)',borderRadius:4,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{position:'left',title:{display:true,text:'条数'}},y1:{position:'right',title:{display:true,text:'万'},grid:{drawOnChartArea:false}}}}});});
+}
+
+// ==================== TAB 2: UPGRADE ====================
+function renderKeywordFactors(){
+var c=document.getElementById('keywordFactorList');if(!c)return;
+var h='';
+KEYWORD_FACTORS.forEach(function(k){
+var cls=k.type==='up'?'kw-up':'kw-down';var icon=k.type==='up'?'📈':'📉';
+h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><span class="kw-tag '+cls+'" style="min-width:70px;text-align:center;">'+icon+' '+k.word+'</span><span style="flex:1;font-size:0.85em;">大爆款 <strong>'+k.bigLift+'x</strong> | 中爆款 <strong>'+k.midLift+'x</strong></span><span style="font-size:0.8em;color:var(--text2);">'+k.action+'</span></div>';
+});
+c.innerHTML=h;
+}
+
+function renderUpgradeRules(){
+var c=document.getElementById('upgradeRules');if(!c)return;
+c.innerHTML='<div class="rule-card"><div class="rule-icon">🥇</div><div class="rule-body"><div class="rule-tt">小爆款→中爆款：加入「频率数字」</div><div class="rule-desc">"一天3-4次""一晚上2-3次"等具体频率描述，将播放从10-30w提升至50w+。数字制造冲击感。</div><div class="rule-stat">6条频率型内容全部达小爆款+，升级潜力待挖掘</div></div></div><div class="rule-card"><div class="rule-icon">🥈</div><div class="rule-body"><div class="rule-tt">小爆款→大爆款：切换为「精液异常」Hook</div><div class="rule-desc">"精液是流出来的，而不是射出来的"是已验证的最强Hook，40%大爆款率。搭配手淫频率描述效果倍增。</div><div class="rule-stat">精液异常型均播放113.6w，远超其他Hook 3-10倍</div></div></div><div class="rule-card"><div class="rule-icon">🥉</div><div class="rule-body"><div class="rule-tt">任何等级→升级：改用「图文」形式</div><div class="rule-desc">图文形式大爆款率37.5%，是所有形式中最高的。图文+反常识数据（如"3-10分钟正常"）=大爆款公式。</div><div class="rule-stat">8条图文均播放88.7w，是口播的6.5倍</div></div></div><div class="rule-card"><div class="rule-icon">💡</div><div class="rule-body"><div class="rule-tt">硬度问题类：必须搭配升级因子</div><div class="rule-desc">125条硬度类开头仅2条大爆款。需叠加"几块钱""藏着不说""压箱底"等因子，或改用精液异常/频率开头。</div><div class="rule-stat">单纯硬度开头大爆款率1.6%，叠加2个升级因子后可达5-8%</div></div></div>';
+}
+
+function renderDissection(){
+var c=document.getElementById('dissectionArea');if(!c)return;
+var h='';
+TOP_VIRAL.slice(0,5).forEach(function(v){
+h+='<div class="insight" style="margin-bottom:10px;"><div class="ins-tt">#'+v.rank+' '+v.views+' | '+v.达人+' | '+v.形式+'</div><div class="ins-txt"><strong>Hook：</strong>"'+v.hook+'"<br><strong>升级因子：</strong>'+v.升级因子.join(' + ')+'<br><strong>文案结构：</strong>'+v.文案摘要+'<br><strong>可复用公式：</strong>'+v.hook+' → 具体数字/场景 → 反常识否定 → 低成本方案 → 产品引出</div></div>';
+});
+c.innerHTML=h;
+}
+
+function renderUpgradeCharts(){
+safeChart('upgradePathChart',function(ctx){return new Chart(ctx,{type:'bar',data:{labels:['精液异常','时间/早泄','方案引导','疑问反问','硬度/勃起','手淫/频率','女性/两性','年龄定位'],datasets:[{label:'大爆款率 %',data:[40,10,3.8,2.6,1.6,0,0,0],backgroundColor:'#c0392b',borderRadius:4},{label:'小爆款率 %',data:[60,70,81,79,83,100,100,80],backgroundColor:'#27ae60',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{max:100,title:{display:true,text:'%'}}}}});});
+safeChart('lengthTierChart',function(ctx){return new Chart(ctx,{type:'bar',data:{labels:LENGTH_STATS.map(function(l){return l.range;}),datasets:[{label:'大爆款',data:LENGTH_STATS.map(function(l){return l.big;}),backgroundColor:'#c0392b',borderRadius:4},{label:'中爆款',data:LENGTH_STATS.map(function(l){return l.mid;}),backgroundColor:'#e67e22',borderRadius:4},{label:'小爆款',data:LENGTH_STATS.map(function(l){return l.sml;}),backgroundColor:'#27ae60',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{stacked:true,title:{display:true,text:'条数'}}}}});});
+}
+
+// ==================== TAB 3: COMPARE ====================
+function renderCompareTable(){
+var c=document.getElementById('compareTable');if(!c)return;
+var rows=[{dim:"平均播放量",big:"188.5w",mid:"71.0w",sml:"15.2w",norm:"4.3w",insight:"大爆款是普通的44x"},{dim:"精液异常Hook占比",big:"27%",mid:"0%",sml:"1%",norm:"0%",insight:"大爆款独有优势因子"},{dim:"含手淫/用手比例",big:"36%",mid:"25%",sml:"6%",norm:"0%",insight:"频率描述=升级加速器"},{dim:"图文形式占比",big:"27%",mid:"0%",sml:"1.7%",norm:"0%",insight:"图文=大爆款专属形式"},{dim:"平均文案长度",big:"196字",mid:"220字",sml:"185字",norm:"160字",insight:"大爆款偏短，信息密度高"},{dim:"含否定词比例",big:"82%",mid:"50%",sml:"45%",norm:"20%",insight:"反常识否定=必备元素"},{dim:"含价格暗示",big:"36%",mid:"0%",sml:"12%",norm:"5%",insight:"几块钱增加亲和力"}];
+var h='<table><thead><tr><th>维度</th><th>大爆款</th><th>中爆款</th><th>小爆款</th><th>普通</th><th>洞察</th></tr></thead><tbody>';
+rows.forEach(function(r){h+='<tr><td><strong>'+r.dim+'</strong></td><td style="color:#c0392b;font-weight:600;">'+r.big+'</td><td style="color:#e67e22;font-weight:600;">'+r.mid+'</td><td style="color:#27ae60;">'+r.sml+'</td><td>'+r.norm+'</td><td>'+r.insight+'</td></tr>';});
+h+='</tbody></table>';c.innerHTML=h;
+}
+
+function renderCompareCharts(){
+safeChart('radarChart',function(ctx){return new Chart(ctx,{type:'radar',data:{labels:['大爆款率','均播放','开头冲击力','数字使用','反常识度','方案明确性','互动转化'],datasets:[{label:'图文',data:[95,95,80,90,95,85,90],borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.15)',borderWidth:2},{label:'抽纸演绎',data:[70,65,85,70,60,80,75],borderColor:'#e67e22',backgroundColor:'rgba(230,126,34,0.1)',borderWidth:2},{label:'口播文案',data:[40,35,60,55,50,70,60],borderColor:'#2980b9',backgroundColor:'rgba(41,128,185,0.1)',borderWidth:2},{label:'手势舞',data:[25,25,40,30,20,60,65],borderColor:'#27ae60',backgroundColor:'rgba(39,174,96,0.1)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{r:{min:0,max:100,ticks:{stepSize:20}}}}});});
+safeChart('authorChart',function(ctx){var authors=[{name:"爱科普的小李",big:3,mid:0,sml:9,total:12},{name:"大翠说药",big:1,mid:0,sml:0,total:1},{name:"中医平平医生",big:1,mid:0,sml:2,total:3},{name:"小莉姐药健康",big:1,mid:0,sml:2,total:3},{name:"琉璃医生",big:1,mid:0,sml:0,total:1},{name:"丁一郎医生",big:1,mid:0,sml:4,total:5},{name:"蓉蓉医生",big:1,mid:0,sml:1,total:2},{name:"丽莉说中医",big:1,mid:0,sml:0,total:1},{name:"药师邓翠婷",big:1,mid:0,sml:0,total:1},{name:"妇科张继雯医生",big:0,mid:1,sml:0,total:1}];return new Chart(ctx,{type:'bar',data:{labels:authors.map(function(a){return a.name;}),datasets:[{label:'大爆款',data:authors.map(function(a){return a.big;}),backgroundColor:'#c0392b',borderRadius:4},{label:'中爆款',data:authors.map(function(a){return a.mid;}),backgroundColor:'#e67e22',borderRadius:4},{label:'小爆款',data:authors.map(function(a){return a.sml;}),backgroundColor:'#27ae60',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,title:{display:true,text:'爆款条数'}}}}});});
+}
+
+// ==================== TAB 4: AI GENERATOR ====================
+function generateCopy(){
+var form=document.getElementById('genForm').value;
+var hook=document.getElementById('genHook').value;
+var target=document.getElementById('genTarget').value;
+var risk=document.getElementById('genRisk').value;
+var extra=document.getElementById('genExtra').value;
+
+var templates={
+'精液异常':{title:['一天手淫{n}次的男人，精液是流出来的，而不是射出来的','手淫频繁后精液像水一样流出来？别慌','精液不是射出来而是流出来的，男人该注意了'],opening:['一天手淫{n}次的男人，精液是流出来的，而不是射出来的，吃什么能补一补呢？','频繁用手后，发现精液不再是射出来，而是流出来的，这其实是身体在发出信号。'],body:['不要再吃生蚝、猪腰、羊鞭了，这些力量太弱了，钱花了不少，可能还会越吃越虚。','很多人第一反应是大补，结果越补越差。问题不在"补"，而在"疏"。','中医讲肝主筋、肾藏精。肝郁了气血不通，肾虚了精关不固。疏肝+补肾，双管齐下才行。'],solution:['{product}','白开水搭一物，成本也就几块钱，人人都用得起。','今天分享一个压箱底的好物，很多医生朋友自己私下都在用。'],cta:['记好这个方法，收藏起来，转发给需要的兄弟。','花1分钟听完，可能改变你的状态。先收藏，免得划走找不到。']},
+'时间/早泄':{title:['进入就想she？记住这两个调理方法','刚进去就忍不住想射精？记好这一招','抽动{n}下就泄了？不是肾虚那么简单'],opening:['阴茎进入后，抽动个{n}来回就忍不住想射精，敏感易泄、硬度下降、时间太短，关键时刻总掉链子。','还没开始就结束了？每次都是刚进去就控制不住，老婆嘴上不说，心里……'],body:['很多人以为是肾虚，拼命补肾，结果越补越泄。问题往往出在肝郁——肝气不通，气血到不了该去的地方。','疏肝解郁、活血补肾，这才是正确的调理思路。不能只盯着一处使劲。'],solution:['{product}','记好两个方法：1.疏肝益阳（胶囊），疏肝解郁活血补肾；2.{method2}','第一个方法知道的人不多，因为价格不高，药店都放在角落里。'],cta:['收藏起来反复看，转发给有需要的朋友。','刷到就是缘分，记好这两招，关键时刻不慌张。']},
+'硬度/勃起':{title:['硬度不够，软到进不去？记好一味宝藏药','用手扶着才能进去，还没动两下就软了','硬不起来，又软又快，床头备好这味药'],opening:['阴茎硬不起来，动几下就软，用手扶着才能勉强进去，还没抽动两下就中途疲软了。','硬度不够，软到进不去，宗筋敏感泄得快。男人最怕的不是穷，是关键时刻硬不起来。'],body:['这其实是肝郁肾虚的典型表现。肝主筋，阴茎是人体最大的"筋"。肝气郁结，气血不通，硬度自然不够。','补肾的同时必须疏肝，双管齐下才能真正解决问题。单独补肾就像只加油不修路。'],solution:['{product}','口袋常备一味药，一次不到两块钱，因为没有什么利润，很多人不愿意公开。','疏肝益阳（胶囊），疏肝解郁、活血补肾，适合痿软不举、胸闷爱叹气、情志抑郁的男性。'],cta:['记好这个实用方，收藏起来，别等用到时找不到。','男人过了30，家里常备。转发给需要的人。']},
+'频率/手淫':{title:['一天用手{n}次的男人，现在怎么样了？','每天想同房但硬不起来的男人，牢记一味药','男人频繁排精，一天{n}次，身体正在被掏空'],opening:['一天手淫{n}次，早起一次，中午一次，晚上睡前还要再来一次。长期过度用手，不仅消耗肾精，还会导致功能越来越差。','年轻时不懂节制，现在年纪大了，硬不起来，又补不进去。这其实是身体在透支。'],body:['过度手淫伤的是肾精，但单纯补肾效果有限。因为长期的愧疚、焦虑导致肝气郁结，形成肝郁+肾虚的恶性循环。','疏肝解郁才能打破循环，活血补肾才能补充亏空。两件事必须一起做。'],solution:['{product}','一味药，既补肝又补肾，让你越喝越有劲。家门口随便一家药店就能找到。','疏肝益阳（胶囊），专门针对肝郁肾虚，疏肝解郁、活血补肾。'],cta:['改变从今天开始，收藏这个方法，转给同样需要的兄弟。']},
+'疑问反问':{title:['优秀的时长一般是多久？别被小电影误导了','大尺寸会更满足吗？真相可能让你意外','男人第一次进不去正常吗？'],opening:['优秀的时长一般是多久呢？别被小电影误导了。半个小时或更久其实不太可能，普通人平均3-10分钟，能坚持10分钟已经很棒了。','别再让小电影误导了。真实的性生活和屏幕上演的完全是两回事。'],body:['真正的问题不在于时长和尺寸，而在于硬度和持久力。很多男人因为焦虑导致肝气郁结，越紧张越不行。','调理的关键是疏肝解郁+活血补肾。肝气通了，气血足了，硬度自然就上来了。'],solution:['{product}','与其焦虑时长，不如调理根本。疏肝益阳（胶囊），疏肝解郁、活血补肾。'],cta:['放下焦虑，科学调理。收藏转发，帮助更多被误导的兄弟。']}
+};
+
+var tmpl=templates[hook]||templates['硬度/勃起'];
+var n=Math.floor(Math.random()*3)+3;
+var d=n+Math.floor(Math.random()*2);
+var riskLevel=risk==='safe'?0:risk==='balanced'?1:2;
+var targetLevel=target==='big'?2:target==='small'?0:1;
+
+var productIntros=[
+'可以记好疏肝益阳（胶囊），疏肝解郁、活血补肾，适合痿软不举、胸闷爱叹气、情志抑郁的男性参考。',
+'记好疏肝益阳胶囊，专门针对肝郁肾虚，疏肝解郁、活血补肾，经医生辨证后可以参考使用。',
+'疏肝益阳（胶囊），疏肝解郁、活血补肾，适用于肝郁肾虚和肝郁肾虚兼血瘀证，经医生辨证为肝郁肾虚的患者可以记好。'
+];
+var productIntro=productIntros[riskLevel];
+
+var method2s=[['利多卡因凝胶，经医生确诊为早泄的患者，事前涂抹可以延长时间。','达克罗宁软膏，事前半小时涂抹，降低敏感度。'],['调整呼吸节奏，配合盆底肌训练，从根本上提升控制力。'],['日常调理+规律作息，不熬夜、少喝酒，让身体恢复自然状态。']];
+var method2=method2s[targetLevel][Math.floor(Math.random()*method2s[targetLevel].length)];
+
+var title=tmpl.title[Math.floor(Math.random()*tmpl.title.length)].replace(/\{n\}/g,n).replace(/\{d\}/g,d);
+var opening=tmpl.opening[Math.floor(Math.random()*tmpl.opening.length)].replace(/\{n\}/g,n).replace(/\{d\}/g,d);
+var body=tmpl.body[Math.floor(Math.random()*tmpl.body.length)];
+var solution=tmpl.solution[Math.floor(Math.random()*tmpl.solution.length)].replace('{product}',productIntro).replace('{method2}',method2);
+var cta=tmpl.cta[Math.floor(Math.random()*tmpl.cta.length)];
+
+var fullScript;
+if(form==='图文'){
+fullScript='【图文卡片脚本】\n\n卡片1：'+title+'\n卡片2：'+opening.replace(/，/g,'\n')+'\n卡片3：'+body.replace(/。/g,'。\n')+'\n卡片4：'+solution.replace(/；/g,'\n')+'\n卡片5：'+cta;
+}else if(form==='抽纸演绎'){
+fullScript='【抽纸演绎脚本】\n\n第一张（封面）：'+title+'\n第二张：'+opening+'\n第三张：'+body+'\n第四张：'+solution+'\n第五张：'+cta+'\n\n💡 演绎提示：每张纸缓慢抽出，配合字幕，语速中等偏慢，BGM选低沉氛围感音乐';
+}else if(form==='手势舞'){
+fullScript='【手势舞脚本】\n\n口播：'+title+'\n手势1（指屏幕）：'+opening.split('，')[0]+'\n手势2（摆手）：'+body.split('。')[0]+'\n手势3（比划）：'+solution.split('，')[0]+'\n手势4（指向）：'+cta.split('，')[0]+'\n\n💡 BGM选热门手势舞音乐，动作简洁有节奏感';
+}else{
+fullScript='【口播文案】\n\n'+title+'\n\n'+opening+'\n\n'+body+'\n\n'+solution+'\n\n'+cta;
+}
+
+var score=50;
+var formBonus={图文:15,抽纸演绎:8,口播文案:0,手势舞:-5};
+var hookBonus={'精液异常':20,'时间/早泄':10,'硬度/勃起':0,'频率/手淫':5,'疑问反问':5};
+var targetBonus={big:-5,mid:0,small:5};
+score+=formBonus[form]||0;score+=hookBonus[hook]||0;score+=targetBonus[target]||0;
+if(extra.indexOf('数字')>=0||extra.indexOf('数据')>=0)score+=5;
+if(extra.indexOf('案例')>=0||extra.indexOf('故事')>=0)score+=3;
+score=Math.max(0,Math.min(100,score));
+
+var expectedRange=score>=80?'50-200w (中-大爆款潜力)':score>=65?'20-80w (小-中爆款潜力)':score>=50?'10-30w (小爆款)':'5-15w (需优化)';
+
+var riskWordsFound=[];
+['特效药','根治','包治','秘方','神药','断根','福利药','平价药','王牌','救命','不敢说','不公开'].forEach(function(w){if(fullScript.indexOf(w)>=0)riskWordsFound.push(w);});
+
+var out=document.getElementById('genOutput');
+out.innerHTML='<div class="gen-result"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;"><div><div class="gen-title">'+title+'</div><div class="gen-meta"><span>📐 '+form+'</span><span>🎣 '+hook+'</span><span>🎯 '+(target==='big'?'冲大爆款':target==='mid'?'稳中爆款':'保小爆款')+'</span></div></div><div style="text-align:center;"><div style="font-size:2em;font-weight:800;color:'+(score>=65?'#c0392b':score>=50?'#e67e22':'#7f8c8d')+';">'+score+'<span style="font-size:0.5em;">/100</span></div><div style="font-size:0.8em;">预期: '+expectedRange+'</div></div></div><div class="gen-script">'+fullScript.replace(/\n/g,'<br>')+'</div><div class="gen-meta" style="margin-top:8px;">'+(riskWordsFound.length>0?'<span style="color:#c0392b;">⚠️ 风险词: '+riskWordsFound.join('、')+'</span>':'<span style="color:#27ae60;">✅ 未检测到高风险词</span>')+'<span style="color:var(--text2);">字数: '+fullScript.length+'</span><button class="btn btn-out btn-sm" onclick="generateCopy()" style="margin-left:auto;">🔄 换一个</button><button class="btn btn-red btn-sm" onclick="var t=this.parentElement.parentElement.querySelector(\'.gen-script\').textContent;navigator.clipboard.writeText(t);this.textContent=\'✅ 已复制\';setTimeout(function(){this.textContent=\'📋 复制文案\';}.bind(this),2000);">📋 复制文案</button></div></div>';
+out.scrollIntoView({behavior:'smooth'});
+}
+
+// ==================== TAB 5: RISK ====================
+function renderRisk(){
+var pyr=document.getElementById('riskWordPyramid');if(!pyr)return;
+var h='';
+h+='<div style="margin-bottom:16px;"><div style="font-weight:700;color:#922b21;margin-bottom:6px;">🔴 高危词 — 限流率 >50%，必须替换</div>';
+RISK_WORDS.high.forEach(function(r){h+='<span class="kw-tag kw-down" style="margin:3px;" title="替换为: '+r.alt+'">'+r.word+' → '+r.alt+'</span>';});
+h+='</div><div style="margin-bottom:16px;"><div style="font-weight:700;color:#b9770e;margin-bottom:6px;">🟡 中危词 — 限流率 20-50%，谨慎使用</div>';
+RISK_WORDS.medium.forEach(function(r){h+='<span class="kw-tag kw-down" style="margin:3px;" title="替换为: '+r.alt+'">'+r.word+' → '+r.alt+'</span>';});
+h+='</div><div><div style="font-weight:700;color:#1e8449;margin-bottom:6px;">🟢 安全词 — 推荐使用</div>';
+RISK_WORDS.safe.forEach(function(w){h+='<span class="kw-tag kw-up" style="margin:3px;">'+w+'</span>';});
+h+='</div>';pyr.innerHTML=h;
+
+var tips=document.getElementById('avoidanceTips');if(!tips)return;
+tips.innerHTML='<div><div class="insight"><div class="ins-tt">技巧1: 用"调理方案"替代"药"</div><div class="ins-txt">所有"XX药"改为"调理方法""调理方案"。产品名保留但减少"药"字单独出现。已下架的大翠说药案例：用蓝字说明规避审核。</div></div><div class="insight"><div class="ins-tt">技巧2: 增加"经医生辨证"前缀</div><div class="ins-txt">每次提及产品时加上"经医生辨证为肝郁肾虚的患者"前缀，将产品推荐转为专业医疗建议。这是已验证有效的规避方式。</div></div><div class="insight"><div class="ins-tt">技巧3: 图文形式天然合规优势</div><div class="ins-txt">图文内容的文字审核比视频口播宽松。图文+数据科普+产品露出=高播放+低风险的最佳组合。</div></div></div><div><div class="insight"><div class="ins-tt">技巧4: 手势舞/抽纸演绎分散注意力</div><div class="ins-txt">手势舞和抽纸演绎中，审核注意力在视觉动作上，文字内容相对容易被接受。22条手势舞100%小爆款、0%限流。</div></div><div class="insight"><div class="ins-tt">技巧5: "合集"形式降低单品推广感</div><div class="ins-txt">将产品放在多个方案中一起介绍（如同时提利多卡因凝胶、达克罗宁软膏），降低单品推广的违规风险。</div></div><div class="insight"><div class="ins-tt">技巧6: 规避"独家""只有"等绝对化表述</div><div class="ins-txt">"药店不公开""医生不知道""只有这个方子"等表述，既增加限流风险，又降低爆款率。改为"很多人不了解""分享一个方法"。</div></div></div>';
+}
+
+function checkRisk(){
+var text=document.getElementById('riskCheckInput').value.trim();
+if(!text){alert('请先粘贴文案');return;}
+var found=[];
+RISK_WORDS.high.forEach(function(r){if(text.indexOf(r.word)>=0)found.push({word:r.word,alt:r.alt,level:'high'});});
+RISK_WORDS.medium.forEach(function(r){if(text.indexOf(r.word)>=0)found.push({word:r.word,alt:r.alt,level:'medium'});});
+var c=document.getElementById('riskCheckResult');
+if(found.length===0){c.innerHTML='<div style="color:#27ae60;font-weight:600;">✅ 未检测到风险词，文案合规性良好</div>';}
+else{var h='<div style="font-weight:700;color:#c0392b;margin-bottom:8px;">⚠️ 检测到 '+found.length+' 个风险词：</div>';
+found.forEach(function(f){var lvl=f.level==='high'?'🔴 高危':'🟡 中危';h+='<div style="margin-bottom:6px;padding:8px;background:#fef9f5;border-radius:6px;border-left:3px solid '+(f.level==='high'?'#c0392b':'#e67e22')+';">'+lvl+' <strong>'+f.word+'</strong> → 建议替换为: <strong style="color:#27ae60;">'+f.alt+'</strong></div>';});
+c.innerHTML=h;}
+}
+
+// ==================== INIT ====================
+function initAll(){
+// Populate ALL static content first (order doesn't matter, all safe)
+renderTopViralTable();
+renderKeywordFactors();
+renderUpgradeRules();
+renderDissection();
+renderCompareTable();
+renderRisk();
+generateCopy();
+// Render charts for the initially visible tab (tab 1)
+setTimeout(function(){renderOverviewCharts();},100);
+}
+
+document.addEventListener('DOMContentLoaded',initAll);
+</script>
+</body>
+</html>

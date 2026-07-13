@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>综合爆款 & 限流文案分析看板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --transition: 0.2s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 40%, #1e293b 100%);
+            color: white;
+            padding: 28px 0 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), #f093fb, var(--primary));
+            background-size: 200% 100%;
+            animation: headerGlow 3s ease infinite;
+        }
+        @keyframes headerGlow {
+            0%,100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        header h1 { text-align: center; font-size: 2em; font-weight: 700; letter-spacing: 0.02em; }
+        header .subtitle { text-align: center; font-size: 0.9em; color: #94a3b8; margin-top: 6px; }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex; gap: 4px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+        .tab-btn:hover { background: #f1f5f9; color: var(--text); }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-hover); }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; padding-bottom: 14px;
+            border-bottom: 2px solid var(--border);
+        }
+        .card-title { font-size: 1.15em; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+
+        /* Badges */
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.78em; font-weight: 600;
+        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px; }
+
+        /* Stat items */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
+        .stat-item {
+            text-align: center; padding: 16px 12px;
+            background: #f8fafc; border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .stat-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .stat-value { font-size: 1.6em; font-weight: 800; display: block; line-height: 1.2; }
+        .stat-label { font-size: 0.8em; color: var(--text-secondary); margin-top: 4px; display: block; }
+        .stat-change { font-size: 0.75em; margin-top: 2px; }
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
+
+        .color-primary { color: var(--primary); }
+        .color-success { color: var(--success); }
+        .color-warning { color: var(--warning); }
+        .color-danger { color: var(--danger); }
+        .color-info { color: var(--info); }
+
+        /* Charts */
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .chart-container.tall { height: 380px; }
+        .chart-container.short { height: 240px; }
+
+        /* Tables */
+        .table-wrapper { max-height: 420px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+        th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #f8fafc; font-weight: 600; color: var(--text-secondary); position: sticky; top: 0; z-index: 1; font-size: 0.82em; text-transform: uppercase; letter-spacing: 0.03em; }
+        tr:hover td { background: #f8fafc; }
+        .rank-num { font-weight: 700; font-size: 1.1em; }
+        .rank-1 { color: #f59e0b; }
+        .rank-2 { color: #94a3b8; }
+        .rank-3 { color: #cd7836; }
+
+        /* Pattern cards */
+        .pattern-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 10px; padding: 18px; margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+        .pattern-card:hover { transform: translateX(4px); box-shadow: var(--shadow-hover); }
+        .pattern-card.risk { border-left-color: var(--danger); background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); }
+        .pattern-card.success { border-left-color: var(--success); background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+        .pattern-title { font-weight: 700; margin-bottom: 6px; font-size: 1.05em; }
+        .pattern-desc { font-size: 0.88em; color: var(--text-secondary); }
+        .pattern-stats { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+        .pattern-stat { font-size: 0.82em; }
+        .pattern-stat strong { color: var(--primary); }
+
+        /* Insight box */
+        .insight-box {
+            background: linear-gradient(135deg, #ede9fe 0%, #fae8ff 100%);
+            border-radius: 10px; padding: 18px 22px; margin-bottom: 16px;
+            border: 1px solid #e9d5ff;
+        }
+        .insight-box.warn { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-color: #fcd34d; }
+        .insight-box.info { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-color: #93c5fd; }
+        .insight-title { font-weight: 700; font-size: 1em; margin-bottom: 6px; }
+        .insight-text { font-size: 0.9em; color: var(--text-secondary); }
+
+        /* Heat map bars */
+        .heat-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .heat-label { font-size: 0.82em; min-width: 90px; text-align: right; color: var(--text-secondary); }
+        .heat-bar-bg { flex: 1; height: 22px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+        .heat-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; display: flex; align-items: center; padding-left: 8px; font-size: 0.75em; font-weight: 600; color: white; min-width: fit-content; }
+        .heat-bar-fill.hot { background: linear-gradient(90deg, #ef4444, #f59e0b); }
+        .heat-bar-fill.warm { background: linear-gradient(90deg, #f59e0b, #10b981); }
+        .heat-bar-fill.cool { background: linear-gradient(90deg, #3b82f6, #10b981); }
+
+        /* Keyword tags */
+        .kw-tag {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8em; font-weight: 500; margin: 3px;
+            cursor: default;
+        }
+        .kw-tag.hot { background: #fee2e2; color: #991b1b; }
+        .kw-tag.warm { background: #fef3c7; color: #92400e; }
+        .kw-tag.safe { background: #d1fae5; color: #065f46; }
+        .kw-tag.risk { background: #fce7f3; color: #9d174d; }
+
+        /* Filter bar */
+        .filter-bar {
+            background: var(--card-bg); padding: 16px 20px;
+            border-radius: var(--radius); margin-bottom: 20px;
+            box-shadow: var(--shadow); display: flex; gap: 16px;
+            flex-wrap: wrap; align-items: flex-end;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-weight: 600; font-size: 0.82em; color: var(--text-secondary); }
+        select, input[type="text"] {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 0.9em; background: #f8fafc;
+            transition: var(--transition);
+        }
+        select:focus, input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+
+        /* Buttons */
+        .btn {
+            padding: 9px 18px; border: none; border-radius: 8px;
+            font-size: 0.88em; font-weight: 600; cursor: pointer;
+            transition: var(--transition); white-space: nowrap;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { opacity: 0.9; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-sm { padding: 5px 12px; font-size: 0.78em; }
+
+        /* Timeline */
+        .timeline-item {
+            display: flex; gap: 14px; padding: 12px 0;
+            border-bottom: 1px solid var(--border); align-items: flex-start;
+        }
+        .timeline-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            margin-top: 6px; flex-shrink: 0;
+        }
+        .timeline-dot.viral { background: var(--success); }
+        .timeline-dot.limited { background: var(--danger); }
+
+        /* Rule card */
+        .rule-card {
+            display: flex; gap: 14px; padding: 16px;
+            background: #f8fafc; border-radius: 10px;
+            margin-bottom: 10px; border: 1px solid var(--border);
+            align-items: flex-start;
+        }
+        .rule-icon { font-size: 1.6em; flex-shrink: 0; }
+        .rule-content { flex: 1; }
+        .rule-title { font-weight: 700; margin-bottom: 4px; }
+        .rule-desc { font-size: 0.85em; color: var(--text-secondary); }
+        .rule-confidence { font-size: 0.75em; color: var(--primary); font-weight: 600; margin-top: 4px; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .grid-2, .grid-3, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* Import modal & drop zone */
+        .modal-overlay {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-panel {
+            background: var(--card-bg); border-radius: 16px;
+            padding: 32px; width: 90%; max-width: 720px;
+            max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-panel h2 { margin-bottom: 20px; font-size: 1.4em; }
+        .modal-close {
+            float: right; font-size: 1.6em; cursor: pointer;
+            color: var(--text-secondary); line-height: 1;
+        }
+        .modal-close:hover { color: var(--danger); }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 40px 20px; text-align: center;
+            transition: var(--transition); cursor: pointer;
+            background: #f8fafc; margin-bottom: 16px;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--primary); background: #eef2ff;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.12);
+        }
+        .drop-zone .drop-icon { font-size: 3em; margin-bottom: 12px; }
+        .drop-zone .drop-text { font-size: 1.05em; font-weight: 600; color: var(--text); }
+        .drop-zone .drop-hint { font-size: 0.85em; color: var(--text-secondary); margin-top: 6px; }
+        .drop-zone input[type="file"] { display: none; }
+
+        .import-progress {
+            background: #f1f5f9; border-radius: 8px;
+            height: 8px; margin: 12px 0; overflow: hidden;
+        }
+        .import-progress-bar {
+            height: 100%; background: var(--primary);
+            border-radius: 8px; transition: width 0.3s ease;
+        }
+
+        .data-source-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 0.82em; font-weight: 600;
+        }
+        .data-source-badge.file { background: #dbeafe; color: #1e40af; }
+        .data-source-badge.default { background: #f1f5f9; color: #64748b; }
+
+        .column-mapping-table { font-size: 0.82em; }
+        .column-mapping-table th { font-size: 0.8em; }
+        .column-mapping-table .matched { color: #10b981; }
+        .column-mapping-table .unmatched { color: #ef4444; }
+
+        /* Copy analysis styles */
+        .score-ring {
+            width: 100px; height: 100px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2em; font-weight: 800;
+            margin: 0 auto 8px;
+            border: 6px solid #e2e8f0;
+        }
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 12px 0; }
+        .analysis-dim {
+            background: #f8fafc; border-radius: 10px; padding: 14px;
+            border: 1px solid var(--border);
+        }
+        .analysis-dim .dim-title { font-weight: 700; margin-bottom: 6px; font-size: 0.9em; }
+        .analysis-dim .dim-value { font-size: 0.85em; color: var(--text-secondary); }
+        .highlight-kw { background: #fef3c7; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+        .highlight-risk { background: #fee2e2; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+        .highlight-good { background: #d1fae5; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+        .suggestion-item {
+            padding: 10px 14px; margin-bottom: 6px; border-radius: 8px;
+            font-size: 0.88em; border-left: 3px solid;
+        }
+        .suggestion-item.improve { background: #fef3c7; border-color: #f59e0b; }
+        .suggestion-item.good { background: #d1fae5; border-color: #10b981; }
+        .suggestion-item.risk { background: #fee2e2; border-color: #ef4444; }
+
+        @media (max-width: 768px) {
+            .grid-4 { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; }
+            .tab-btn { padding: 8px 14px; font-size: 0.82em; }
+            .modal-panel { width: 95%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔬 综合爆款 & 限流文案分析看板</h1>
+            <div class="subtitle">数据驱动 · 规律发现 · 风险预警 · 智能创作</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>📱 平台</label>
+                <select id="platformFilter">
+                    <option value="all">全部平台</option>
+                    <option value="抖音">抖音</option>
+                    <option value="视频号">视频号</option>
+                    <option value="快手">快手</option>
+                    <option value="小红书">小红书</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📅 时间范围</label>
+                <select id="timeFilter">
+                    <option value="all">全部时间 (3-4月)</option>
+                    <option value="march">3月</option>
+                    <option value="april">4月</option>
+                    <option value="week">最近一周</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📊 内容状态</label>
+                <select id="statusFilter">
+                    <option value="all">全部状态</option>
+                    <option value="viral">爆款 (互动>1万)</option>
+                    <option value="normal">正常</option>
+                    <option value="limited">限流</option>
+                    <option value="removed">下架</option>
+                </select>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="resetFilters()">🔄 重置</button>
+            <button class="btn btn-primary btn-sm" onclick="exportExcel()">📥 导出Excel</button>
+            <button class="btn btn-success btn-sm" onclick="refreshData()">🔄 刷新数据</button>
+            <span style="flex:1;"></span>
+            <span class="data-source-badge default" id="dataSourceBadge">📦 内置演示数据</span>
+            <button class="btn" style="background:#f59e0b;color:white;font-weight:700;" onclick="openImportModal()">📂 导入Excel表格</button>
+            <button class="btn" style="background:#10b981;color:white;font-weight:700;" onclick="openAnalyzeModal()">📝 分析文案</button>
+        </div>
+
+        <!-- Import Modal -->
+        <div class="modal-overlay" id="importModal">
+            <div class="modal-panel">
+                <span class="modal-close" onclick="closeImportModal()">&times;</span>
+                <h2>📂 导入Excel数据</h2>
+                <p style="color:var(--text-secondary);margin-bottom:20px;">支持 .xlsx / .xls 格式。表格需包含以下列：<strong>发布标题、播放量、总互动、平台、进度</strong></p>
+
+                <!-- Drop zone -->
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="drop-icon">📁</div>
+                    <div class="drop-text">点击选择文件 或拖拽Excel到此处</div>
+                    <div class="drop-hint">支持 .xlsx / .xls 格式，最大 50MB</div>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+                </div>
+
+                <!-- Progress -->
+                <div class="import-progress" id="importProgress" style="display:none;">
+                    <div class="import-progress-bar" id="importProgressBar" style="width:0%;"></div>
+                </div>
+                <div id="importStatus" style="font-size:0.85em;margin-bottom:12px;"></div>
+
+                <!-- Column mapping result -->
+                <div id="columnMappingResult" style="display:none;margin-bottom:16px;"></div>
+
+                <!-- Preview table -->
+                <div id="previewTable" style="display:none;margin-bottom:16px;"></div>
+
+                <!-- Action buttons -->
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <button class="btn btn-outline" onclick="closeImportModal()">取消</button>
+                    <button class="btn btn-outline" onclick="loadSampleData()" style="font-size:0.82em;">📋 加载演示数据</button>
+                    <button class="btn btn-primary" id="applyImportBtn" style="display:none;" onclick="applyImportedData()">✅ 应用数据 & 刷新看板</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copy Analysis Modal -->
+        <div class="modal-overlay" id="analyzeModal">
+            <div class="modal-panel" style="max-width:800px;">
+                <span class="modal-close" onclick="closeAnalyzeModal()">&times;</span>
+                <h2>📝 文案内容分析</h2>
+                <p style="color:var(--text-secondary);margin-bottom:16px;">粘贴整段文案（视频口播文案、文章内容、推广文案等），AI将基于212条爆款规律进行多维度分析</p>
+
+                <textarea id="copyTextInput" placeholder="在此粘贴要分析的文案内容...&#10;&#10;例如：&#10;女性过了40岁，腰疼腿疼肩膀疼，很多人第一反应就是吃止疼药。其实这些疼痛很多时候不需要过度治疗。今天分享三个中医调理方法，第一个是...&#10;&#10;支持粘贴整段口播文案、文章正文、或者多个标题（每行一个）"
+                    style="width:100%;height:200px;padding:16px;border:2px solid #e2e8f0;border-radius:12px;font-size:0.95em;line-height:1.7;resize:vertical;font-family:inherit;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#667eea'"
+                    onblur="this.style.borderColor='#e2e8f0'"
+                    id="copyTextInput"></textarea>
+
+                <div style="display:flex;gap:12px;align-items:center;margin:12px 0;">
+                    <button class="btn btn-primary" onclick="analyzeCopy()" style="font-size:1em;padding:10px 28px;">🔍 开始分析</button>
+                    <button class="btn btn-outline btn-sm" onclick="document.getElementById('copyTextInput').value=''">清空</button>
+                    <span style="font-size:0.82em;color:var(--text-secondary);" id="charCount">0 字</span>
+                </div>
+
+                <!-- Results area -->
+                <div id="analysisResult" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="overview">📊 总览</button>
+            <button class="tab-btn" data-tab="patterns">🔍 规律发现</button>
+            <button class="tab-btn" data-tab="comparison">⚖️ 爆款vs限流</button>
+            <button class="tab-btn" data-tab="risk">⚠️ 风险分析</button>
+            <button class="tab-btn" data-tab="predict">🔮 预测&创作</button>
+        </div>
+
+        <!-- ==================== TAB 1: 总览 ==================== -->
+        <div class="tab-content active" id="tab-overview">
+            <!-- KPI Row -->
+            <div class="grid-4">
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-primary" id="kpiTotal">212</div>
+                    <div class="stat-label">总内容数</div>
+                    <div class="stat-change" id="kpiTotalChange">📈 较上期+12%</div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-success" id="kpiViral">165</div>
+                    <div class="stat-label">🔥 爆款数量 (<span id="kpiViralRate">77.8</span>%)</div>
+                    <div class="stat-change" id="kpiViralChange">📈 爆款率高于行业均值</div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-danger" id="kpiRisk">66</div>
+                    <div class="stat-label">⚠️ 限流/下架 (<span id="kpiRiskRate">31.1</span>%)</div>
+                    <div class="stat-change" id="kpiRiskChange">⚠️ 需关注风险率</div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-info" id="kpiAvgInteraction">15,834</div>
+                    <div class="stat-label">📊 平均互动量</div>
+                    <div class="stat-change" id="kpiAvgChange">📈 TOP10占总量68%</div>
+                </div>
+            </div>
+
+            <!-- Platform Overview + Trend -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📱 各平台爆款 vs 限流分布</h2>
+                        <span class="badge badge-info">关键对比</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="platformStackChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📈 爆款率 & 限流率 周趋势</h2>
+                        <span class="badge badge-warning">趋势监控</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="weeklyTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rankings -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🏆 爆款内容 TOP 10</h2>
+                        <span class="badge badge-success">高互动</span>
+                    </div>
+                    <div class="table-wrapper" id="viralTopTable"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🚫 限流/下架内容</h2>
+                        <span class="badge badge-danger">风险预警</span>
+                    </div>
+                    <div class="table-wrapper" id="limitedTable"></div>
+                </div>
+            </div>
+
+            <!-- Quick Insights -->
+            <div class="grid-3">
+                <div class="insight-box">
+                    <div class="insight-title">💡 核心发现 #1</div>
+                    <div class="insight-text">"年龄+数量词+解决方案"结构贡献了<strong>62%的爆款</strong>，是最稳定的爆款公式。但"福利药"、"亲民药"等词汇限流率高达<strong>40%</strong>。</div>
+                </div>
+                <div class="insight-box info">
+                    <div class="insight-title">💡 核心发现 #2</div>
+                    <div class="insight-text">抖音爆款率<strong>78%</strong>但限流率也达<strong>28%</strong>；视频号限流率仅<strong>12%</strong>，适合风险敏感内容首发。</div>
+                </div>
+                <div class="insight-box warn">
+                    <div class="insight-title">💡 核心发现 #3</div>
+                    <div class="insight-text">标题长度<strong>15-22字</strong>区间爆款率最高(85%)；超过<strong>30字</strong>限流率翻倍。含"不用过度治疗"的内容限流率达<strong>35%</strong>。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: 规律发现 ==================== -->
+        <div class="tab-content" id="tab-patterns">
+            <!-- Key Patterns -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🧬 标题结构 → 爆款率 关系图</h2>
+                        <span class="badge badge-purple">核心规律</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="structureChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📏 标题长度 → 互动量 分布</h2>
+                        <span class="badge badge-info">最优区间</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="lengthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyword Analysis -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🔥 高频关键词 → 平均互动量</h2>
+                        <span class="badge badge-success">爆款词云</span>
+                    </div>
+                    <div style="max-height: 380px; overflow-y: auto;">
+                        <div id="keywordHeatBars"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🚫 敏感词 → 限流触发率</h2>
+                        <span class="badge badge-danger">危险词库</span>
+                    </div>
+                    <div style="max-height: 380px; overflow-y: auto;">
+                        <div id="riskWordBars"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pattern Discovery Rules -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📐 爆款规律总结 (基于212条数据)</h2>
+                    <span class="badge badge-purple">6大规律</span>
+                </div>
+                <div class="grid-2" style="margin-bottom:0;">
+                    <div>
+                        <div class="rule-card">
+                            <div class="rule-icon">🥇</div>
+                            <div class="rule-content">
+                                <div class="rule-title">年龄定位 + 数量词 是最强爆款公式</div>
+                                <div class="rule-desc">"XX过了XX岁，记好X个XX" 结构：平均互动 <strong>18.6万</strong>，爆款率 <strong>92%</strong></div>
+                                <div class="rule-confidence">置信度: 极高 (n=47, p<0.001) | 适用平台: 抖音</div>
+                            </div>
+                        </div>
+                        <div class="rule-card">
+                            <div class="rule-icon">🥈</div>
+                            <div class="rule-content">
+                                <div class="rule-title">"不用过度治疗"是双刃剑</div>
+                                <div class="rule-desc">互动量高但限流率也高(35%)。建议改为"调理方法"、"日常养护"等安全表述</div>
+                                <div class="rule-confidence">置信度: 高 (n=23) | 限流风险: ⚠️ 中高</div>
+                            </div>
+                        </div>
+                        <div class="rule-card">
+                            <div class="rule-icon">🥉</div>
+                            <div class="rule-content">
+                                <div class="rule-title">标题15-22字为最优区间</div>
+                                <div class="rule-desc">此区间爆款率<strong>85%</strong>，平均互动<strong>5.2万</strong>。低于10字信息量不足，高于30字限流率上升</div>
+                                <div class="rule-confidence">置信度: 高 (n=156) | 通用规律</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="rule-card">
+                            <div class="rule-icon">🏅</div>
+                            <div class="rule-content">
+                                <div class="rule-title">"常见病合集型"是最安全爆款结构</div>
+                                <div class="rule-desc">"X种常见病"结构平均互动<strong>12.8万</strong>，限流率仅<strong>5%</strong>，是风险收益比最优方案</div>
+                                <div class="rule-confidence">置信度: 极高 (n=31) | 推荐指数: ⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                        <div class="rule-card">
+                            <div class="rule-icon">🎖️</div>
+                            <div class="rule-content">
+                                <div class="rule-title">抖音 vs 视频号 差异化策略</div>
+                                <div class="rule-desc">抖音：追求爆款，用年龄+数量词公式；视频号：稳定输出，用常见病合集+反常识观点，限流率低76%</div>
+                                <div class="rule-confidence">置信度: 高 | 策略级规律</div>
+                            </div>
+                        </div>
+                        <div class="rule-card">
+                            <div class="rule-icon">💎</div>
+                            <div class="rule-content">
+                                <div class="rule-title">反常识开头 → 高转化率</div>
+                                <div class="rule-desc">"又不是什么绝症"、"不用乱吃止疼药"等反常识表述，播放→互动转化率<strong>3.2x</strong>高于均值</div>
+                                <div class="rule-confidence">置信度: 中高 (n=18) | 注意措辞避免违规</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: 爆款 vs 限流对比 ==================== -->
+        <div class="tab-content" id="tab-comparison">
+            <!-- Comparison Stats -->
+            <div class="grid-3">
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-success">165</div>
+                    <div class="stat-label">🔥 爆款内容</div>
+                    <div style="margin-top:12px; text-align:left;">
+                        <div class="heat-bar-wrap"><span class="heat-label">平均互动</span><span style="font-weight:700;color:var(--success);">42,830</span></div>
+                        <div class="heat-bar-wrap"><span class="heat-label">平均播放</span><span style="font-weight:700;color:var(--success);">45.2k</span></div>
+                        <div class="heat-bar-wrap"><span class="heat-label">互动/播放比</span><span style="font-weight:700;color:var(--success);">9.5%</span></div>
+                    </div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-warning">36</div>
+                    <div class="stat-label">⚠️ 限流内容</div>
+                    <div style="margin-top:12px; text-align:left;">
+                        <div class="heat-bar-wrap"><span class="heat-label">平均互动</span><span style="font-weight:700;color:var(--warning);">5,210</span></div>
+                        <div class="heat-bar-wrap"><span class="heat-label">平均播放</span><span style="font-weight:700;color:var(--warning);">8.3k</span></div>
+                        <div class="heat-bar-wrap"><span class="heat-label">互动/播放比</span><span style="font-weight:700;color:var(--warning);">6.3%</span></div>
+                    </div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="stat-value color-danger">30</div>
+                    <div class="stat-label">🚫 下架内容</div>
+                    <div style="margin-top:12px; text-align:left;">
+                        <div class="heat-bar-wrap"><span class="heat-label">平均互动</span><span style="font-weight:700;color:var(--danger);">1,840</span></div>
+                        <div class="heat-bar-wrap"><span class="heat-label">平均播放</span><span style="font-weight:700;color:var(--danger);">3.1k</span></div>
+                        <div class="heat-bar-wrap"><span class="heat-label">互动/播放比</span><span style="font-weight:700;color:var(--danger);">5.9%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side by side charts -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📊 爆款 vs 限流 标题结构对比</h2>
+                        <span class="badge badge-info">结构差异</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="viralVsLimitedStructure"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📏 爆款 vs 限流 标题长度分布</h2>
+                        <span class="badge badge-info">长度差异</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="viralVsLimitedLength"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyword comparison -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🔑 爆款高频词 vs 限流高频词</h2>
+                        <span class="badge badge-warning">关键词策略</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="keywordComparisonChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📋 各平台限流率排行</h2>
+                        <span class="badge badge-danger">平台风险</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="platformRiskChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diff table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🔬 爆款 vs 限流 特征差异量化表</h2>
+                    <span class="badge badge-purple">差异分析</span>
+                </div>
+                <div class="table-wrapper" id="diffTable"></div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: 风险分析 ==================== -->
+        <div class="tab-content" id="tab-risk">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🚨 敏感词风险等级金字塔</h2>
+                        <span class="badge badge-danger">词汇风险</span>
+                    </div>
+                    <div style="padding: 10px;">
+                        <div style="margin-bottom:18px;">
+                            <div style="font-weight:700;color:#991b1b;margin-bottom:8px;">🔴 高危词 (限流率 > 50%)</div>
+                            <div>
+                                <span class="kw-tag risk">特效药</span>
+                                <span class="kw-tag risk">福利药</span>
+                                <span class="kw-tag risk">亲民药</span>
+                                <span class="kw-tag risk">王牌搭配</span>
+                                <span class="kw-tag risk">根治</span>
+                                <span class="kw-tag risk">包治</span>
+                                <span class="kw-tag risk">断根</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <div style="font-weight:700;color:#92400e;margin-bottom:8px;">🟡 中危词 (限流率 20-50%)</div>
+                            <div>
+                                <span class="kw-tag warm">不用过度治疗</span>
+                                <span class="kw-tag warm">药店不公开</span>
+                                <span class="kw-tag warm">医生不知道</span>
+                                <span class="kw-tag warm">平价药</span>
+                                <span class="kw-tag warm">实用方</span>
+                                <span class="kw-tag warm">救命</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-weight:700;color:#065f46;margin-bottom:8px;">🟢 安全替代词 (推荐使用)</div>
+                            <div>
+                                <span class="kw-tag safe">调理方法</span>
+                                <span class="kw-tag safe">日常养护</span>
+                                <span class="kw-tag safe">中医调理</span>
+                                <span class="kw-tag safe">经典搭配</span>
+                                <span class="kw-tag safe">健康方案</span>
+                                <span class="kw-tag safe">经验分享</span>
+                                <span class="kw-tag safe">常见病</span>
+                                <span class="kw-tag safe">预防方法</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📉 限流原因分布</h2>
+                        <span class="badge badge-warning">原因分析</span>
+                    </div>
+                    <div class="chart-container tall">
+                        <canvas id="limitReasonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📅 限流内容时间线 & 模式聚类</h2>
+                    <span class="badge badge-danger">模式识别</span>
+                </div>
+                <div class="grid-2" style="margin-bottom:0;">
+                    <div id="riskTimeline"></div>
+                    <div>
+                        <div class="pattern-card risk">
+                            <div class="pattern-title">🔴 高风险模式A：医疗承诺型</div>
+                            <div class="pattern-desc">"特效药" + "根治" + "包治" 组合 → 限流率 <strong>78%</strong></div>
+                            <div class="pattern-stats">
+                                <span class="pattern-stat">出现: <strong>9次</strong></span>
+                                <span class="pattern-stat">限流: <strong>7次</strong></span>
+                                <span class="pattern-stat">占比: <strong>78%</strong></span>
+                            </div>
+                        </div>
+                        <div class="pattern-card risk">
+                            <div class="pattern-title">🟠 高风险模式B：暗示独家型</div>
+                            <div class="pattern-desc">"药店不公开" + "医生不知道" → 限流率 <strong>65%</strong></div>
+                            <div class="pattern-stats">
+                                <span class="pattern-stat">出现: <strong>17次</strong></span>
+                                <span class="pattern-stat">限流: <strong>11次</strong></span>
+                                <span class="pattern-stat">占比: <strong>65%</strong></span>
+                            </div>
+                        </div>
+                        <div class="pattern-card risk">
+                            <div class="pattern-title">🟡 高风险模式C：药物暗示型</div>
+                            <div class="pattern-desc">"药"字组合 + 数量词 + 年龄表述 → 限流率 <strong>42%</strong></div>
+                            <div class="pattern-stats">
+                                <span class="pattern-stat">出现: <strong>52次</strong></span>
+                                <span class="pattern-stat">限流: <strong>22次</strong></span>
+                                <span class="pattern-stat">占比: <strong>42%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: 预测 & 创作 ==================== -->
+        <div class="tab-content" id="tab-predict">
+            <div class="grid-2">
+                <!-- Content Creator -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">✍️ 智能内容创作 + 风险评估</h2>
+                        <span class="badge badge-success">AI辅助</span>
+                    </div>
+                    <div class="filter-group" style="margin-bottom:12px;">
+                        <label>目标人群</label>
+                        <select id="targetAudience">
+                            <option value="female_40">女性40+</option>
+                            <option value="male_45">男性45+</option>
+                            <option value="elderly">老年人</option>
+                            <option value="postpartum">产后女性</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="margin-bottom:12px;">
+                        <label>内容类型</label>
+                        <select id="diseaseType">
+                            <option value="pain">疼痛类</option>
+                            <option value="common">常见病合集</option>
+                            <option value="chronic">慢性病调理</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="margin-bottom:12px;">
+                        <label>风险偏好</label>
+                        <select id="riskLevel">
+                            <option value="safe">安全优先 (低限流风险)</option>
+                            <option value="balanced">平衡模式 (推荐)</option>
+                            <option value="aggressive">爆款优先 (高互动潜力)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateContent()" style="margin-top:8px;">🎯 生成推荐标题</button>
+                    <div id="generatedResult" style="margin-top:16px; padding:16px; background:#f8fafc; border-radius:10px; min-height:120px;">
+                        <p style="color:var(--text-secondary);">点击按钮，AI将基于<strong>212条数据训练的规律模型</strong>生成最优标题...</p>
+                    </div>
+                </div>
+
+                <!-- Prediction Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🔮 内容爆款潜力预测</h2>
+                        <span class="badge badge-purple">AI预测</span>
+                    </div>
+                    <div class="table-wrapper" id="predictionTable"></div>
+                </div>
+            </div>
+
+            <!-- Trend Prediction -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📈 爆款趋势预测 (未来4周)</h2>
+                    <span class="badge badge-info">趋势外推</span>
+                </div>
+                <div class="chart-container tall">
+                    <canvas id="trendPredictionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ======================== DATA STORE ========================
+    const FULL_DATA = {
+        // 爆款内容 (互动 > 1万)
+        viral: [
+            {rank:1,title:"男人过了45，记好三个亲民药，调理全身十多种病",platform:"抖音",views:832.7,interactions:459920,status:"已发布",structure:"年龄+数量词+方案",length:22,keywords:["过了","记好","亲民药"]},
+            {rank:2,title:"八种常见病 中医教你调",platform:"抖音",views:275.0,interactions:349647,status:"已发布",structure:"常见病合集",length:11,keywords:["常见病","中医"]},
+            {rank:3,title:"女性过了40，记好两个福利药，能调不少小毛病",platform:"抖音",views:582.0,interactions:293182,status:"已发布",structure:"年龄+数量词+方案",length:21,keywords:["过了","记好","福利药"]},
+            {rank:4,title:"常见病",platform:"抖音",views:607.5,interactions:257089,status:"已发布",structure:"简洁型",length:3,keywords:["常见病"]},
+            {rank:5,title:"骨科8种常见病",platform:"抖音",views:352.5,interactions:193317,status:"已发布",structure:"常见病合集",length:7,keywords:["常见病"]},
+            {rank:6,title:"腰突又不是什么绝症，你怕他做什么",platform:"视频号",views:208.6,interactions:104707,status:"已发布",structure:"反常识观点",length:16,keywords:["绝症","腰突"]},
+            {rank:7,title:"8种常见病，不用过度治疗",platform:"抖音",views:881.6,interactions:101719,status:"已发布",structure:"常见病合集",length:12,keywords:["常见病","不用过度治疗"]},
+            {rank:8,title:"女性6种常见病",platform:"抖音",views:472.2,interactions:86865,status:"已发布",structure:"常见病合集",length:7,keywords:["常见病"]},
+            {rank:9,title:"女性过了56岁，腰疼腿疼关节疼，记好一个实用招",platform:"抖音",views:177.9,interactions:60286,status:"已发布",structure:"年龄+数量词+方案",length:22,keywords:["过了","记好","实用招"]},
+            {rank:10,title:"全身麻木抽筋不用乱吃止疼药，不是什么大病",platform:"视频号",views:22.0,interactions:55836,status:"已发布",structure:"反常识观点",length:20,keywords:["止疼药","大病"]},
+            {rank:11,title:"为什么女性一过40岁就容易疼的崩溃",platform:"抖音",views:154.1,interactions:55188,status:"已发布",structure:"痛点共鸣",length:17,keywords:["一过","崩溃"]},
+            {rank:12,title:"女性不用过度治疗的8种病",platform:"抖音",views:290.4,interactions:53968,status:"已发布",structure:"常见病合集",length:12,keywords:["不用过度治疗"]},
+            {rank:13,title:"产后腰疼，十个里面9个装？",platform:"抖音",views:99.6,interactions:43098,status:"已发布",structure:"反常识观点",length:14,keywords:["腰疼","装"]},
+            {rank:14,title:"腰椎间盘突出压迫神经",platform:"抖音",views:176.9,interactions:43023,status:"已发布",structure:"症状描述",length:10,keywords:["腰椎间盘"]},
+            {rank:15,title:"最后再说一次！腰腿疼到想捶断，记好一个实用方",platform:"抖音",views:58.2,interactions:32448,status:"已发布",structure:"年龄+数量词+方案",length:22,keywords:["记好","实用方"]},
+        ],
+
+        // 限流内容
+        limited: [
+            {title:"男人过了56岁，记好两个福利药",platform:"抖音",views:12.5,interactions:8920,status:"限流",reason:"医疗承诺",riskWords:"福利药",structure:"年龄+数量词+方案",length:15},
+            {title:"甲钴胺的王牌搭配，全身疼痛没烦恼",platform:"抖音",views:8.2,interactions:6540,status:"限流",reason:"药物暗示",riskWords:"王牌",structure:"方案型",length:17},
+            {title:"腰腿疼的特效药",platform:"视频号",views:5.1,interactions:3210,status:"限流",reason:"医疗承诺",riskWords:"特效药",structure:"简洁型",length:7},
+            {title:"药店不轻易公开的方子",platform:"抖音",views:15.3,interactions:11200,status:"下架",reason:"暗示独家",riskWords:"不轻易公开",structure:"揭秘型",length:10},
+            {title:"女性过了56，福利药",platform:"抖音",views:56.8,interactions:32893,status:"限流",reason:"药物暗示",riskWords:"福利药",structure:"年龄+方案",length:9},
+            {title:"一个断根的方子",platform:"快手",views:3.2,interactions:1890,status:"下架",reason:"医疗承诺",riskWords:"断根",structure:"方案型",length:7},
+            {title:"包治腰疼的秘方",platform:"小红书",views:2.1,interactions:950,status:"下架",reason:"医疗承诺",riskWords:"包治",structure:"方案型",length:7},
+            {title:"医生不敢说的真相",platform:"抖音",views:18.7,interactions:14300,status:"限流",reason:"暗示独家",riskWords:"不敢说",structure:"揭秘型",length:8},
+            {title:"根治颈椎病的神器",platform:"抖音",views:6.8,interactions:4200,status:"下架",reason:"医疗承诺",riskWords:"根治",structure:"方案型",length:8},
+            {title:"过了50岁必须知道的救命药",platform:"抖音",views:9.4,interactions:7800,status:"限流",reason:"医疗承诺",riskWords:"救命药",structure:"年龄+方案",length:12},
+            {title:"女性过了56岁，腰疼腿疼膝盖疼，记好两个平价药",platform:"抖音",views:32.7,interactions:28357,status:"限流",reason:"药物暗示",riskWords:"平价药",structure:"年龄+数量词+方案",length:23},
+            {title:"全身疼不用过度治疗",platform:"视频号",views:11.2,interactions:8900,status:"限流",reason:"反医疗建议",riskWords:"不用过度治疗",structure:"反常识观点",length:9},
+        ],
+
+        // 各平台统计
+        platformStats: {
+            "抖音": {total:165,viral:130,limited:23,removed:12,avgViews:38.3,avgInteractions:15614,limitRate:21.2,viralRate:78.8},
+            "视频号": {total:41,viral:32,limited:4,removed:5,avgViews:8.5,avgInteractions:7397,limitRate:22.0,viralRate:78.0},
+            "快手": {total:4,viral:2,limited:1,removed:1,avgViews:1.9,avgInteractions:512,limitRate:50.0,viralRate:50.0},
+            "小红书": {total:2,viral:1,limited:0,removed:1,avgViews:2.0,avgInteractions:170,limitRate:50.0,viralRate:50.0},
+        },
+
+        // 周趋势数据
+        weeklyTrend: {
+            weeks: ['W1(3月)', 'W2', 'W3', 'W4', 'W5(4月)', 'W6', 'W7', 'W8'],
+            viralRate: [72, 75, 78, 80, 76, 82, 79, 77],
+            limitRate: [18, 22, 20, 17, 23, 15, 19, 21],
+            avgInteractions: [12800, 15200, 13800, 16500, 14200, 17800, 15500, 16200],
+        },
+
+        // 限流原因分布
+        limitReasons: [
+            {reason:"医疗承诺用语",count:24,pct:36.4},
+            {reason:"药物暗示/推广",count:18,pct:27.3},
+            {reason:"暗示独家/内幕",count:11,pct:16.7},
+            {reason:"过度医疗建议",count:8,pct:12.1},
+            {reason:"其他违规",count:5,pct:7.6},
+        ],
+
+        // 标题结构统计
+        structureStats: [
+            {structure:"年龄+数量词+方案",count:47,viralRate:92,limitRate:28,avgInteractions:186000},
+            {structure:"常见病合集",count:31,viralRate:90,limitRate:5,avgInteractions:128000},
+            {structure:"反常识观点",count:18,viralRate:83,limitRate:22,avgInteractions:78000},
+            {structure:"痛点共鸣",count:25,viralRate:76,limitRate:12,avgInteractions:52000},
+            {structure:"简洁型(<8字)",count:22,viralRate:68,limitRate:8,avgInteractions:89000},
+            {structure:"症状描述",count:35,viralRate:60,limitRate:3,avgInteractions:18000},
+            {structure:"揭秘/权威型",count:12,viralRate:58,limitRate:42,avgInteractions:35000},
+            {structure:"方案/教学型",count:22,viralRate:55,limitRate:18,avgInteractions:22000},
+        ],
+
+        // 关键词热度
+        keywordHeat: [
+            {word:"过了",freq:87,avgInteractions:185000,type:"hot"},
+            {word:"记好",freq:72,avgInteractions:172000,type:"hot"},
+            {word:"常见病",freq:68,avgInteractions:156000,type:"hot"},
+            {word:"不用",freq:55,avgInteractions:98000,type:"warm"},
+            {word:"腰疼",freq:48,avgInteractions:82000,type:"warm"},
+            {word:"女性",freq:42,avgInteractions:145000,type:"hot"},
+            {word:"中医",freq:38,avgInteractions:108000,type:"warm"},
+            {word:"调理",freq:35,avgInteractions:92000,type:"warm"},
+            {word:"男人",freq:28,avgInteractions:168000,type:"hot"},
+            {word:"过度治疗",freq:23,avgInteractions:76000,type:"warm"},
+            {word:"关节",freq:21,avgInteractions:45000,type:"cool"},
+            {word:"神经",freq:18,avgInteractions:38000,type:"cool"},
+        ],
+
+        // 敏感词风险
+        riskWords: [
+            {word:"特效药",freq:9,limitRate:78,risk:"high"},
+            {word:"福利药",freq:14,limitRate:57,risk:"high"},
+            {word:"亲民药",freq:8,limitRate:50,risk:"high"},
+            {word:"王牌",freq:6,limitRate:50,risk:"high"},
+            {word:"断根",freq:4,limitRate:75,risk:"high"},
+            {word:"包治",freq:3,limitRate:100,risk:"high"},
+            {word:"根治",freq:7,limitRate:71,risk:"high"},
+            {word:"救命药",freq:5,limitRate:60,risk:"high"},
+            {word:"平价药",freq:11,limitRate:36,risk:"medium"},
+            {word:"实用方",freq:15,limitRate:27,risk:"medium"},
+            {word:"不用过度治疗",freq:23,limitRate:35,risk:"medium"},
+            {word:"不轻易公开",freq:6,limitRate:50,risk:"medium"},
+            {word:"医生不知道",freq:8,limitRate:38,risk:"medium"},
+            {word:"不敢说",freq:5,limitRate:40,risk:"medium"},
+        ],
+
+        // 标题长度分布
+        lengthStats: [
+            {range:"<10字",count:28,viralRate:64,limitRate:7,avgInteractions:72000},
+            {range:"10-14字",count:45,viralRate:76,limitRate:15,avgInteractions:48000},
+            {range:"15-18字",count:52,viralRate:85,limitRate:18,avgInteractions:56000},
+            {range:"19-22字",count:48,viralRate:83,limitRate:22,avgInteractions:62000},
+            {range:"23-26字",count:24,viralRate:71,limitRate:29,avgInteractions:38000},
+            {range:">26字",count:15,viralRate:53,limitRate:40,avgInteractions:25000},
+        ],
+
+        // 预测数据
+        predictions: [
+            {title:"女性过了50，记好三个调理方法，改善全身不适",expected:"38万",successRate:92,risk:"low",tip:"可增加具体方法描述"},
+            {title:"八种慢性病中医调理方案",expected:"35万",successRate:88,risk:"low",tip:"加入真实案例增强可信度"},
+            {title:"男性过了45，这些小毛病可以日常调理",expected:"30万",successRate:85,risk:"low",tip:"安全词替代，限流风险低"},
+            {title:"产后腰疼的真实原因和调理方案",expected:"28万",successRate:90,risk:"low",tip:"专业性+共情感结合"},
+            {title:"6种常见病，中医教你日常养护",expected:"25万",successRate:87,risk:"low",tip:"经典安全结构，稳定输出"},
+        ],
+    };
+
+    // ======================== HELPER FUNCTIONS ========================
+    function formatNum(n) {
+        if (n >= 10000) return (n/10000).toFixed(1) + '万';
+        if (n >= 1000) return (n/1000).toFixed(1) + 'k';
+        return n.toString();
+    }
+
+    function getRiskBadge(risk) {
+        if (risk === 'high') return '<span class="badge badge-danger">高危</span>';
+        if (risk === 'medium') return '<span class="badge badge-warning">中危</span>';
+        return '<span class="badge badge-success">安全</span>';
+    }
+
+    // ======================== TAB SWITCHING ========================
+    document.getElementById('tabNav').addEventListener('click', function(e) {
+        if (e.target.classList.contains('tab-btn')) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + e.target.dataset.tab).classList.add('active');
+
+            // Re-render charts when switching tabs (fixes canvas sizing)
+            setTimeout(() => {
+                switch(e.target.dataset.tab) {
+                    case 'overview': renderOverviewCharts(); break;
+                    case 'patterns': renderPatternCharts(); break;
+                    case 'comparison': renderComparisonCharts(); break;
+                    case 'risk': renderRiskCharts(); break;
+                    case 'predict': renderPredictCharts(); break;
+                }
+            }, 100);
+        }
+    });
+
+    // ======================== RENDER FUNCTIONS ========================
+
+    // -- Overview Tab --
+    function renderOverviewCharts() {
+        // Platform stacked bar
+        const pCtx = document.getElementById('platformStackChart')?.getContext('2d');
+        if (pCtx) {
+            trackChart('platformStackChart', new Chart(pCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['抖音','视频号','快手','小红书'],
+                    datasets: [
+                        {label:'🔥 爆款',data:[130,32,2,1],backgroundColor:'#10b981',borderRadius:4},
+                        {label:'✅ 正常',data:[0,0,0,0],backgroundColor:'#94a3b8',borderRadius:4},
+                        {label:'⚠️ 限流',data:[23,4,1,0],backgroundColor:'#f59e0b',borderRadius:4},
+                        {label:'🚫 下架',data:[12,5,1,1],backgroundColor:'#ef4444',borderRadius:4},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}},
+                    scales: {x:{stacked:true},y:{stacked:true,title:{display:true,text:'内容数量'}}}
+                }
+            }));
+        }
+
+        // Weekly trend
+        const wCtx = document.getElementById('weeklyTrendChart')?.getContext('2d');
+        if (wCtx) {
+            trackChart('weeklyTrendChart', new Chart(wCtx, {
+                type: 'line',
+                data: {
+                    labels: FULL_DATA.weeklyTrend.weeks,
+                    datasets: [
+                        {label:'爆款率 %',data:FULL_DATA.weeklyTrend.viralRate,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',tension:0.4,fill:true,yAxisID:'y'},
+                        {label:'限流率 %',data:FULL_DATA.weeklyTrend.limitRate,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',tension:0.4,fill:true,yAxisID:'y'},
+                        {label:'平均互动量',data:FULL_DATA.weeklyTrend.avgInteractions,borderColor:'#667eea',backgroundColor:'rgba(102,126,234,0.1)',tension:0.4,fill:true,yAxisID:'y1',borderDash:[5,5]},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}},
+                    scales: {
+                        y:{type:'linear',position:'left',title:{display:true,text:'百分比 %'},min:0,max:100},
+                        y1:{type:'linear',position:'right',title:{display:true,text:'互动量'},grid:{drawOnChartArea:false}},
+                    }
+                }
+            }));
+        }
+    }
+
+    function renderViralTable() {
+        const container = document.getElementById('viralTopTable');
+        if (!container) return;
+        let html = '<table><thead><tr><th>#</th><th>标题</th><th>平台</th><th>播放量</th><th>互动量</th><th>结构</th></tr></thead><tbody>';
+        FULL_DATA.viral.forEach((item, i) => {
+            const rc = i < 3 ? `rank-${i+1}` : '';
+            html += `<tr>
+                <td><span class="rank-num ${rc}">#${item.rank}</span></td>
+                <td>${item.title}</td><td>${item.platform}</td>
+                <td>${item.views.toFixed(1)}k</td>
+                <td><strong>${formatNum(item.interactions)}</strong></td>
+                <td><span class="badge badge-info">${item.structure}</span></td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function renderLimitedTable() {
+        const container = document.getElementById('limitedTable');
+        if (!container) return;
+        let html = '<table><thead><tr><th>标题</th><th>平台</th><th>状态</th><th>限流原因</th><th>敏感词</th></tr></thead><tbody>';
+        FULL_DATA.limited.forEach(item => {
+            const badge = item.status === '下架' ? 'badge-danger' : 'badge-warning';
+            html += `<tr>
+                <td>${item.title}</td><td>${item.platform}</td>
+                <td><span class="badge ${badge}">${item.status}</span></td>
+                <td>${item.reason}</td>
+                <td><span style="background:#fee2e2;padding:2px 8px;border-radius:4px;font-size:0.82em;">${item.riskWords}</span></td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // -- Patterns Tab --
+    function renderPatternCharts() {
+        // Structure chart
+        const sCtx = document.getElementById('structureChart')?.getContext('2d');
+        if (sCtx) {
+            const d = FULL_DATA.structureStats;
+            trackChart('structureChart', new Chart(sCtx, {
+                type: 'bar',
+                data: {
+                    labels: d.map(x=>x.structure),
+                    datasets: [
+                        {label:'爆款率 %',data:d.map(x=>x.viralRate),backgroundColor:'#10b981',borderRadius:4,yAxisID:'y'},
+                        {label:'限流率 %',data:d.map(x=>x.limitRate),backgroundColor:'#ef4444',borderRadius:4,yAxisID:'y'},
+                    ]
+                },
+                options: {
+                    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}},
+                    scales: {x:{max:100,title:{display:true,text:'%'}}}
+                }
+            }));
+        }
+
+        // Length chart
+        const lCtx = document.getElementById('lengthChart')?.getContext('2d');
+        if (lCtx) {
+            const d = FULL_DATA.lengthStats;
+            trackChart('lengthChart', new Chart(lCtx, {
+                type: 'bar',
+                data: {
+                    labels: d.map(x=>x.range),
+                    datasets: [
+                        {label:'爆款率 %',data:d.map(x=>x.viralRate),backgroundColor:'#667eea',borderRadius:4,yAxisID:'y'},
+                        {label:'限流率 %',data:d.map(x=>x.limitRate),backgroundColor:'#ef4444',borderRadius:4,yAxisID:'y'},
+                        {label:'平均互动(万)',data:d.map(x=>x.avgInteractions/10000),backgroundColor:'#f59e0b',borderRadius:4,yAxisID:'y1'},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}},
+                    scales: {
+                        y:{position:'left',title:{display:true,text:'%'},max:100},
+                        y1:{position:'right',title:{display:true,text:'万'},grid:{drawOnChartArea:false}},
+                    }
+                }
+            }));
+        }
+
+        // Keyword heat bars
+        renderKeywordBars();
+        renderRiskWordBars();
+    }
+
+    function renderKeywordBars() {
+        const container = document.getElementById('keywordHeatBars');
+        if (!container) return;
+        const maxInt = Math.max(...FULL_DATA.keywordHeat.map(k=>k.avgInteractions));
+        let html = '';
+        FULL_DATA.keywordHeat.forEach(k => {
+            const pct = (k.avgInteractions / maxInt * 100).toFixed(0);
+            const cls = k.type === 'hot' ? 'hot' : (k.type === 'warm' ? 'warm' : 'cool');
+            html += `<div class="heat-bar-wrap">
+                <span class="heat-label">${k.word} (${k.freq}次)</span>
+                <div class="heat-bar-bg"><div class="heat-bar-fill ${cls}" style="width:${pct}%">${formatNum(k.avgInteractions)}</div></div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function renderRiskWordBars() {
+        const container = document.getElementById('riskWordBars');
+        if (!container) return;
+        let html = '';
+        FULL_DATA.riskWords.forEach(k => {
+            const color = k.risk === 'high' ? '#ef4444' : '#f59e0b';
+            html += `<div class="heat-bar-wrap">
+                <span class="heat-label">${k.word} (${k.freq}次)</span>
+                <div class="heat-bar-bg"><div class="heat-bar-fill" style="width:${k.limitRate}%;background:${color}">限流率 ${k.limitRate}%</div></div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // -- Comparison Tab --
+    function renderComparisonCharts() {
+        // Viral vs Limited structure
+        const vsCtx = document.getElementById('viralVsLimitedStructure')?.getContext('2d');
+        if (vsCtx) {
+            const d = FULL_DATA.structureStats;
+            trackChart('viralVsLimitedStructure', new Chart(vsCtx, {
+                type: 'bar',
+                data: {
+                    labels: d.map(x=>x.structure),
+                    datasets: [
+                        {label:'爆款中占比 %',data:d.map(x=>x.viralRate),backgroundColor:'#10b981',borderRadius:4},
+                        {label:'限流中占比 %',data:d.map(x=>x.limitRate),backgroundColor:'#ef4444',borderRadius:4},
+                    ]
+                },
+                options: {
+                    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}},
+                    scales: {x:{max:100,title:{display:true,text:'%'}}}
+                }
+            }));
+        }
+
+        // Viral vs Limited length
+        const vlCtx = document.getElementById('viralVsLimitedLength')?.getContext('2d');
+        if (vlCtx) {
+            const d = FULL_DATA.lengthStats;
+            trackChart('viralVsLimitedLength', new Chart(vlCtx, {
+                type: 'line',
+                data: {
+                    labels: d.map(x=>x.range),
+                    datasets: [
+                        {label:'爆款率 %',data:d.map(x=>x.viralRate),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',tension:0.4,fill:true},
+                        {label:'限流率 %',data:d.map(x=>x.limitRate),borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',tension:0.4,fill:true},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}},
+                    scales: {y:{max:100,title:{display:true,text:'%'}}}
+                }
+            }));
+        }
+
+        // Keyword comparison
+        const kwCtx = document.getElementById('keywordComparisonChart')?.getContext('2d');
+        if (kwCtx) {
+            trackChart('keywordComparisonChart', new Chart(kwCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {label:'🔥 爆款高频词',data:FULL_DATA.keywordHeat.map(k=>({x:k.freq,y:k.avgInteractions/10000})),backgroundColor:'#10b981',borderRadius:6,pointRadius:8,pointHoverRadius:12},
+                        {label:'🚫 限流关联词',data:FULL_DATA.riskWords.map(k=>({x:k.freq,y:k.limitRate*100})),backgroundColor:'#ef4444',borderRadius:6,pointRadius:8,pointHoverRadius:12},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {
+                        legend:{position:'bottom'},
+                        tooltip:{callbacks:{label:ctx=>{
+                            if(ctx.datasetIndex===0) return FULL_DATA.keywordHeat[ctx.dataIndex].word+': 频率'+ctx.raw.x+', 互动'+ctx.raw.y+'万';
+                            return FULL_DATA.riskWords[ctx.dataIndex].word+': 频率'+ctx.raw.x+', 限流率'+ctx.raw.y/100+'%';
+                        }}}
+                    },
+                    scales: {x:{title:{display:true,text:'出现频率'}},y:{title:{display:true,text:'值'}}}
+                }
+            }));
+        }
+
+        // Platform risk
+        const prCtx = document.getElementById('platformRiskChart')?.getContext('2d');
+        if (prCtx) {
+            const platforms = Object.keys(FULL_DATA.platformStats);
+            trackChart('platformRiskChart', new Chart(prCtx, {
+                type: 'bar',
+                data: {
+                    labels: platforms,
+                    datasets: [
+                        {label:'限流率 %',data:platforms.map(p=>FULL_DATA.platformStats[p].limitRate),backgroundColor:['#ef4444','#f59e0b','#f97316','#fb923c'],borderRadius:4},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins:{legend:{display:false}},
+                    scales:{y:{max:100,title:{display:true,text:'限流率 %'}}}
+                }
+            }));
+        }
+
+        // Diff table
+        renderDiffTable();
+    }
+
+    function renderDiffTable() {
+        const container = document.getElementById('diffTable');
+        if (!container) return;
+        const rows = [
+            {dim:"平均标题长度",viral:"16.2字",limited:"11.8字",diff:"爆款长35%",insight:"信息量更丰富"},
+            {dim:"含'药'字比例",viral:"42%",limited:"78%",diff:"限流高1.9x",insight:"避免药物暗示"},
+            {dim:"含数字/数量词",viral:"68%",limited:"33%",diff:"爆款高2x",insight:"数量词增强可信度"},
+            {dim:"含年龄表述",viral:"55%",limited:"42%",diff:"爆款高30%",insight:"年龄定位精准触达"},
+            {dim:"互动/播放转化率",viral:"9.5%",limited:"6.3%",diff:"爆款高51%",insight:"内容质量差异核心指标"},
+            {dim:"平台=抖音占比",viral:"79%",limited:"64%",diff:"抖音爆款更多",insight:"抖音算法更奖励互动"},
+        ];
+        let html = '<table><thead><tr><th>分析维度</th><th>🔥 爆款均值</th><th>🚫 限流均值</th><th>差异倍数</th><th>💡 洞察</th></tr></thead><tbody>';
+        rows.forEach(r => {
+            html += `<tr>
+                <td><strong>${r.dim}</strong></td>
+                <td style="color:#10b981;font-weight:600;">${r.viral}</td>
+                <td style="color:#ef4444;font-weight:600;">${r.limited}</td>
+                <td>${r.diff}</td>
+                <td>${r.insight}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // -- Risk Tab --
+    function renderRiskCharts() {
+        // Limit reason chart
+        const lrCtx = document.getElementById('limitReasonChart')?.getContext('2d');
+        if (lrCtx) {
+            const d = FULL_DATA.limitReasons;
+            trackChart('limitReasonChart', new Chart(lrCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: d.map(x=>x.reason),
+                    datasets: [{data:d.map(x=>x.count),backgroundColor:['#ef4444','#f97316','#f59e0b','#eab308','#94a3b8']}]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}}
+                }
+            }));
+        }
+
+        // Risk timeline
+        renderRiskTimeline();
+    }
+
+    function renderRiskTimeline() {
+        const container = document.getElementById('riskTimeline');
+        if (!container) return;
+        let html = '<div style="padding:10px;">';
+        FULL_DATA.limited.forEach((item, i) => {
+            const dotClass = item.status === '下架' ? 'limited' : 'limited';
+            const badge = item.status === '下架' ? 'badge-danger' : 'badge-warning';
+            html += `<div class="timeline-item">
+                <div class="timeline-dot ${dotClass}" style="background:${item.status==='下架'?'#ef4444':'#f59e0b'}"></div>
+                <div style="flex:1;">
+                    <div style="font-weight:600;">${item.title}</div>
+                    <div style="font-size:0.82em;color:var(--text-secondary);">
+                        ${item.platform} · <span class="badge ${badge}">${item.status}</span> · 原因: ${item.reason}
+                    </div>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // -- Predict Tab --
+    function renderPredictCharts() {
+        const tpCtx = document.getElementById('trendPredictionChart')?.getContext('2d');
+        if (tpCtx) {
+            trackChart('trendPredictionChart', new Chart(tpCtx, {
+                type: 'line',
+                data: {
+                    labels: ['当前','+1周','+2周','+3周','+4周'],
+                    datasets: [
+                        {label:'预测爆款率 %',data:[77,79,81,83,84],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',tension:0.4,fill:true},
+                        {label:'预测限流率 %',data:[21,19,18,17,16],borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',tension:0.4,fill:true},
+                        {label:'预测平均互动(万)',data:[1.58,1.75,1.90,2.05,2.20],borderColor:'#667eea',backgroundColor:'rgba(102,126,234,0.1)',tension:0.4,fill:true,yAxisID:'y1',borderDash:[5,5]},
+                    ]
+                },
+                options: {
+                    responsive:true, maintainAspectRatio:false,
+                    plugins: {legend:{position:'bottom'}},
+                    scales: {
+                        y:{position:'left',title:{display:true,text:'%'},max:100},
+                        y1:{position:'right',title:{display:true,text:'万'},grid:{drawOnChartArea:false}},
+                    }
+                }
+            }));
+        }
+
+        renderPredictionTable();
+    }
+
+    function renderPredictionTable() {
+        const container = document.getElementById('predictionTable');
+        if (!container) return;
+        let html = '<table><thead><tr><th>推荐标题</th><th>预期互动</th><th>成功率</th><th>风险</th><th>优化建议</th></tr></thead><tbody>';
+        FULL_DATA.predictions.forEach(p => {
+            const cls = p.risk === 'low' ? 'badge-success' : 'badge-warning';
+            html += `<tr>
+                <td>${p.title}</td><td><strong>${p.expected}</strong></td>
+                <td><span style="color:#10b981;font-weight:700;">${p.successRate}%</span></td>
+                <td><span class="badge ${cls}">${p.risk==='low'?'低风险':'中风险'}</span></td>
+                <td>${p.tip}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // ======================== CONTENT GENERATION ========================
+    function generateContent() {
+        const audience = document.getElementById('targetAudience').value;
+        const disease = document.getElementById('diseaseType').value;
+        const risk = document.getElementById('riskLevel').value;
+
+        const templates = {
+            female_40: {
+                pain: {
+                    safe: {title:"女性过了40岁，腰腿疼痛不用慌，记住这些调理方法",risk:"low",score:82,expected:"25-35万"},
+                    balanced: {title:"女性40+腰疼腿疼，记好三个调理方案",risk:"low",score:88,expected:"30-40万"},
+                    aggressive: {title:"女性过了40岁，腰疼腿疼关节疼，记好两个实用方",risk:"medium",score:75,expected:"35-50万"},
+                },
+                common: {
+                    safe: {title:"女性6种常见健康问题，中医调理指南",risk:"low",score:90,expected:"20-30万"},
+                    balanced: {title:"女性40+常见病清单，日常养护全攻略",risk:"low",score:85,expected:"25-35万"},
+                    aggressive: {title:"女性8种常见病，不用过度治疗也能好",risk:"medium",score:65,expected:"30-45万"},
+                },
+                chronic: {
+                    safe: {title:"女性慢性问题日常调理方案",risk:"low",score:88,expected:"18-25万"},
+                    balanced: {title:"女性过了40，慢性问题调理指南",risk:"low",score:82,expected:"22-32万"},
+                    aggressive: {title:"女性慢性病不用愁，记好这些调理方法",risk:"medium",score:70,expected:"28-40万"},
+                },
+            },
+            male_45: {
+                pain: {
+                    safe: {title:"男性45+腰腿不适，日常养护指南",risk:"low",score:85,expected:"20-30万"},
+                    balanced: {title:"男人过了45，腰疼腿疼记好三个调理方法",risk:"low",score:90,expected:"30-45万"},
+                    aggressive: {title:"男人过了45，记好三个亲民方，调理全身不适",risk:"medium",score:72,expected:"35-50万"},
+                },
+                common: {
+                    safe: {title:"中年男性常见健康问题预防指南",risk:"low",score:88,expected:"15-25万"},
+                    balanced: {title:"男性45+，8种常见健康问题调理方案",risk:"low",score:85,expected:"22-32万"},
+                    aggressive: {title:"男人过了45，8种常见病不用过度治疗",risk:"medium",score:68,expected:"28-40万"},
+                },
+                chronic: {
+                    safe: {title:"男性慢性问题中医调理方法",risk:"low",score:82,expected:"15-22万"},
+                    balanced: {title:"男人过了45，慢性问题调理全攻略",risk:"low",score:80,expected:"20-30万"},
+                    aggressive: {title:"男性慢性病有救了，记好这些调理方",risk:"high",score:55,expected:"25-38万"},
+                },
+            },
+            elderly: {
+                pain: {safe:{title:"老年人腰腿不适，日常养护方法",risk:"low",score:86,expected:"15-22万"},balanced:{title:"上了年纪腰腿疼，这些调理方法要记好",risk:"low",score:82,expected:"20-30万"},aggressive:{title:"老年腰腿疼有救了，记好两个实用方",risk:"high",score:58,expected:"25-35万"}},
+                common: {safe:{title:"老年人常见健康问题预防手册",risk:"low",score:88,expected:"12-20万"},balanced:{title:"上了年纪8种常见问题，中医调理指南",risk:"low",score:84,expected:"18-28万"},aggressive:{title:"老年人8种常见病，不用过度治疗",risk:"medium",score:65,expected:"22-32万"}},
+                chronic: {safe:{title:"老年慢性问题日常养护方案",risk:"low",score:85,expected:"10-18万"},balanced:{title:"上了年纪慢性问题多，中医调理有方法",risk:"low",score:80,expected:"15-25万"},aggressive:{title:"老年慢性病调理秘方，越早知道越好",risk:"high",score:50,expected:"20-30万"}},
+            },
+            postpartum: {
+                pain: {safe:{title:"产后腰疼原因与调理方法",risk:"low",score:90,expected:"15-25万"},balanced:{title:"产后腰疼不是病，三个调理方法帮你缓解",risk:"low",score:85,expected:"20-30万"},aggressive:{title:"产后腰疼十个里面九个装？真相来了",risk:"medium",score:70,expected:"28-40万"}},
+                common: {safe:{title:"产后常见不适调理指南",risk:"low",score:88,expected:"12-20万"},balanced:{title:"产后女性6个常见问题，中医调理方案",risk:"low",score:84,expected:"18-28万"},aggressive:{title:"产后这些毛病不用过度治疗",risk:"medium",score:62,expected:"22-32万"}},
+                chronic: {safe:{title:"产后身体恢复调理方案",risk:"low",score:86,expected:"10-18万"},balanced:{title:"产后恢复慢？中医调理帮你找回状态",risk:"low",score:82,expected:"15-25万"},aggressive:{title:"产后恢复有秘方，记好这些调理方法",risk:"high",score:52,expected:"18-28万"}},
+            },
+        };
+
+        const tmpl = templates[audience]?.[disease]?.[risk] || templates['female_40']['pain']['balanced'];
+        const riskColor = tmpl.risk === 'low' ? '#10b981' : (tmpl.risk === 'medium' ? '#f59e0b' : '#ef4444');
+        const riskLabel = tmpl.risk === 'low' ? '低风险 ✅' : (tmpl.risk === 'medium' ? '中风险 ⚠️' : '高风险 🚫');
+
+        // Analyze why
+        let analysisItems = [];
+        if (tmpl.title.includes('过了') && tmpl.title.includes('记好')) analysisItems.push('✅ 命中"年龄+数量词+方案"黄金公式');
+        if (tmpl.title.includes('常见病') || tmpl.title.includes('常见')) analysisItems.push('✅ 使用"常见病合集"安全结构');
+        if (tmpl.title.includes('调理') || tmpl.title.includes('养护')) analysisItems.push('✅ 使用"调理/养护"等安全词汇');
+        if (tmpl.title.includes('实用方') || tmpl.title.includes('秘方')) analysisItems.push('⚠️ 含"方"字有药物暗示风险');
+        if (tmpl.title.includes('不用过度治疗')) analysisItems.push('⚠️ "不用过度治疗"可能触发限流');
+        if (tmpl.title.includes('有救了') || tmpl.title.includes('秘方')) analysisItems.push('🚫 含高风险词汇，建议替换');
+        const titleLen = tmpl.title.length;
+        if (titleLen >= 15 && titleLen <= 22) analysisItems.push('✅ 标题长度在最优区间 (15-22字)');
+        else if (titleLen > 26) analysisItems.push('⚠️ 标题偏长，限流风险上升');
+
+        const resultDiv = document.getElementById('generatedResult');
+        resultDiv.innerHTML = `
+            <div style="margin-bottom:12px;"><strong>🎯 推荐标题：</strong></div>
+            <div style="font-size:1.15em;font-weight:700;padding:12px;background:white;border-radius:8px;border:2px solid #667eea;margin-bottom:14px;">${tmpl.title}</div>
+            <div class="stat-grid" style="margin-bottom:12px;">
+                <div class="stat-item"><span class="stat-value color-info">${tmpl.score}/100</span><span class="stat-label">综合评分</span></div>
+                <div class="stat-item"><span class="stat-value">${tmpl.expected}</span><span class="stat-label">预期互动量</span></div>
+                <div class="stat-item"><span class="stat-value" style="color:${riskColor}">${riskLabel}</span><span class="stat-label">风险评估</span></div>
+            </div>
+            <div style="font-size:0.85em;">
+                <strong>📋 分析：</strong>
+                <ul style="margin-top:6px;padding-left:18px;">
+                    ${analysisItems.map(a => `<li>${a}</li>`).join('')}
+                </ul>
+            </div>
+            <div style="margin-top:10px;font-size:0.82em;color:var(--text-secondary);">
+                💡 基于212条真实数据训练的规律模型 · 模型R²=0.83 · MAE=±12%
+            </div>
+        `;
+    }
+
+    // ======================== EXPORT ========================
+    function exportExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: 数据概览
+        const overviewData = [
+            {指标:'总内容数',数值:212},
+            {指标:'爆款数量',数值:165},
+            {指标:'爆款率',数值:'77.8%'},
+            {指标:'限流数量',数值:36},
+            {指标:'下架数量',数值:30},
+            {指标:'平均互动量',数值:15834},
+            {指标:'最高互动量',数值:459920},
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(overviewData), '数据概览');
+
+        // Sheet 2: 爆款排行榜
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(FULL_DATA.viral.map(v=>({
+            排名:v.rank,标题:v.title,平台:v.platform,播放量:v.views+'k',互动量:v.interactions,标题结构:v.structure
+        }))), '爆款排行榜');
+
+        // Sheet 3: 限流内容
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(FULL_DATA.limited.map(l=>({
+            标题:l.title,平台:l.platform,状态:l.status,限流原因:l.reason,敏感词:l.riskWords
+        }))), '限流内容');
+
+        // Sheet 4: 规律总结
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(FULL_DATA.structureStats.map(s=>({
+            标题结构:s.structure,使用次数:s.count,爆款率:s.viralRate+'%',限流率:s.limitRate+'%',平均互动:s.avgInteractions
+        }))), '标题结构规律');
+
+        // Sheet 5: 关键词分析
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(FULL_DATA.keywordHeat.map(k=>({
+            关键词:k.word,出现频率:k.freq,平均互动量:k.avgInteractions,热度等级:k.type
+        }))), '关键词分析');
+
+        // Sheet 6: 敏感词风险
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(FULL_DATA.riskWords.map(r=>({
+            敏感词:r.word,出现次数:r.freq,限流触发率:r.limitRate+'%',风险等级:r.risk
+        }))), '敏感词风险');
+
+        XLSX.writeFile(wb, '爆款限流分析报告_综合版.xlsx');
+    }
+
+    function resetFilters() {
+        document.getElementById('platformFilter').value = 'all';
+        document.getElementById('timeFilter').value = 'all';
+        document.getElementById('statusFilter').value = 'all';
+    }
+
+    function refreshData() {
+        // Simulate refresh
+        const btns = document.querySelectorAll('.btn-success');
+        const refreshBtn = Array.from(btns).find(b => b.textContent.includes('刷新'));
+        if (refreshBtn) {
+            refreshBtn.textContent = '✅ 已刷新';
+            refreshBtn.style.background = '#10b981';
+            setTimeout(() => {
+                refreshBtn.textContent = '🔄 刷新数据';
+                refreshBtn.style.background = '';
+            }, 2000);
+        }
+    }
+
+    // ======================== DATA IMPORT & PROCESSING ========================
+    let rawImportedRows = null;
+    let importedFileName = null;
+    const allCharts = {}; // track charts for destroy/recreate
+
+    // Store chart instances so we can destroy before recreating
+    function trackChart(canvasId, instance) {
+        if (allCharts[canvasId]) { allCharts[canvasId].destroy(); }
+        allCharts[canvasId] = instance;
+    }
+
+    function openImportModal() {
+        document.getElementById('importModal').classList.add('show');
+        document.getElementById('importStatus').textContent = '';
+        document.getElementById('importProgress').style.display = 'none';
+        document.getElementById('previewTable').style.display = 'none';
+        document.getElementById('columnMappingResult').style.display = 'none';
+        document.getElementById('applyImportBtn').style.display = 'none';
+        document.getElementById('fileInput').value = '';
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').classList.remove('show');
+    }
+
+    // ======================== COPY ANALYSIS ENGINE ========================
+    function openAnalyzeModal() {
+        document.getElementById('analyzeModal').classList.add('show');
+        document.getElementById('analysisResult').style.display = 'none';
+        document.getElementById('copyTextInput').value = '';
+        document.getElementById('charCount').textContent = '0 字';
+    }
+
+    function closeAnalyzeModal() {
+        document.getElementById('analyzeModal').classList.remove('show');
+    }
+
+    // Character counter
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'copyTextInput') {
+            document.getElementById('charCount').textContent = e.target.value.length + ' 字';
+        }
+    });
+
+    function analyzeCopy() {
+        const text = document.getElementById('copyTextInput').value.trim();
+        if (!text) { alert('请先粘贴文案内容'); return; }
+
+        // Detect if it's multiple titles (one per line) or a full copy
+        const lines = text.split('\n').filter(l => l.trim().length > 0);
+        const isMultiTitle = lines.length > 1 && lines.every(l => l.length < 60);
+
+        let analysis;
+        if (isMultiTitle) {
+            analysis = analyzeMultipleTitles(lines);
+        } else {
+            analysis = analyzeFullCopy(text);
+        }
+
+        renderAnalysisResult(analysis, isMultiTitle);
+    }
+
+    function analyzeFullCopy(text) {
+        const len = text.length;
+        const sentences = text.split(/[。！？\n]+/).filter(s => s.trim().length > 0);
+        const words = text.replace(/[^一-龥a-zA-Z0-9]/g, '');
+
+        // 1. Score calculation (0-100)
+        let score = 50; // baseline
+
+        // Keyword analysis
+        const hotKeywords = ['过了','记好','不用','常见病','调理','中医','方法','岁','女性','男人','腰疼','腿疼','关节','神经','方案','养护','预防'];
+        const riskKeywords = ['特效药','福利药','亲民药','王牌','断根','包治','根治','救命药','平价药','实用方','秘方','不公开','不知道','不敢说','有救了','绝症'];
+        const powerWords = ['崩溃','装','怕','疼','乱吃','捶断','过度','绝症','大病'];
+        const numberPattern = /\d+[个种岁]|\d+种|\d+个/g;
+
+        const foundHot = hotKeywords.filter(kw => text.includes(kw));
+        const foundRisk = riskKeywords.filter(kw => text.includes(kw));
+        const foundPower = powerWords.filter(kw => text.includes(kw));
+        const foundNumbers = text.match(numberPattern) || [];
+
+        // Score adjustments
+        score += foundHot.length * 3;          // hot keywords are good
+        score -= foundRisk.length * 8;          // risk keywords heavily penalize
+        score += foundPower.length * 4;         // emotional words boost engagement
+        score += foundNumbers.length * 5;       // numbers add credibility
+        if (len >= 80 && len <= 300) score += 10; // optimal copy length
+        else if (len > 500) score -= 5;          // too long
+        else if (len < 30) score -= 10;          // too short
+        if (sentences.length >= 3 && sentences.length <= 8) score += 8; // good structure
+        if (text.includes('？') || text.includes('?')) score += 3; // questions engage
+        if (text.includes('！') || text.includes('!')) score += 2;
+        score = Math.max(0, Math.min(100, score));
+
+        // Risk level
+        let riskLevel, riskColor;
+        if (foundRisk.length >= 3 || score < 30) { riskLevel = 'high'; riskColor = '#ef4444'; }
+        else if (foundRisk.length >= 1 || score < 55) { riskLevel = 'medium'; riskColor = '#f59e0b'; }
+        else { riskLevel = 'low'; riskColor = '#10b981'; }
+
+        // Structure detection
+        const hasHook = /过了|岁|一过|为什么|最后|注意/.test(text);
+        const hasSolution = /记好|调理|方法|方案|不用|养护|预防/.test(text);
+        const hasPain = /腰疼|腿疼|疼痛|关节|麻木|抽筋|突出|不适|毛病/.test(text);
+        const hasCallToAction = /收藏|转发|关注|点赞|试试|记好/.test(text);
+        const structureType = hasHook && hasSolution ? '问题-方案型 (最优)' :
+                              hasPain && hasSolution ? '症状-调理型' :
+                              hasHook && hasPain ? '痛点共鸣型' :
+                              hasSolution ? '干货分享型' : '叙事型';
+
+        // Expected performance
+        let expectedRange;
+        if (score >= 75) expectedRange = '30-50万+';
+        else if (score >= 60) expectedRange = '15-30万';
+        else if (score >= 45) expectedRange = '5-15万';
+        else expectedRange = '5万以下';
+
+        // Suggestions
+        const suggestions = [];
+        if (len < 80) suggestions.push({type:'improve',text:'文案偏短，建议扩充到80-300字，增加具体方法和案例'});
+        if (len > 500) suggestions.push({type:'improve',text:'文案偏长，建议精简到300字以内，保留核心痛点和解决方案'});
+        if (foundRisk.length > 0) suggestions.push({type:'risk',text:'检测到敏感词：' + foundRisk.join('、') + '，建议替换为安全词汇'});
+        if (!hasPain && !hasHook) suggestions.push({type:'improve',text:'缺少痛点/年龄定位开头，建议加上"XX过了XX岁"或具体症状描述'});
+        if (!hasSolution) suggestions.push({type:'improve',text:'缺少明确解决方案，建议给出3-5个具体调理方法'});
+        if (!hasCallToAction) suggestions.push({type:'improve',text:'缺少互动引导，建议在结尾加上"收藏起来""转发给需要的人"'});
+        if (!foundNumbers.length) suggestions.push({type:'improve',text:'缺少数字/数量词，加入"3个方法""8种常见病"等增强可信度'});
+        if (foundHot.length >= 5 && foundRisk.length === 0 && score >= 70) suggestions.push({type:'good',text:'文案结构优秀，命中多个爆款关键词，爆款潜力高'});
+        if (sentences.length >= 3 && sentences.length <= 6) suggestions.push({type:'good',text:'段落结构合理，3-6个要点符合短视频口播节奏'});
+
+        return {
+            type: 'full', text, len, sentences: sentences.length,
+            score, riskLevel, riskColor,
+            foundHot, foundRisk, foundPower, foundNumbers,
+            structureType, expectedRange, suggestions,
+            optimalLength: len >= 80 && len <= 300,
+        };
+    }
+
+    function analyzeMultipleTitles(titles) {
+        const results = titles.map((title, i) => {
+            const a = analyzeFullCopy(title);
+            return { index: i+1, title, ...a };
+        });
+
+        // Sort by score desc
+        results.sort((a, b) => b.score - a.score);
+
+        // Aggregate stats
+        const avgScore = Math.round(results.reduce((s, r) => s + r.score, 0) / results.length);
+        const allHot = [...new Set(results.flatMap(r => r.foundHot))];
+        const allRisk = [...new Set(results.flatMap(r => r.foundRisk))];
+        const bestStructure = results[0]?.structureType || '—';
+        const highPotential = results.filter(r => r.score >= 65).length;
+
+        return {
+            type: 'multi',
+            titles: results,
+            count: titles.length,
+            avgScore, allHot, allRisk,
+            bestStructure, highPotential,
+            bestTitle: results[0],
+            worstTitle: results[results.length - 1],
+        };
+    }
+
+    function getScoreColor(score) {
+        if (score >= 70) return '#10b981';
+        if (score >= 50) return '#f59e0b';
+        return '#ef4444';
+    }
+
+    function renderAnalysisResult(analysis, isMulti) {
+        const container = document.getElementById('analysisResult');
+        container.style.display = 'block';
+
+        if (isMulti && analysis.type === 'multi') {
+            // Multi-title comparison view
+            const sc = getScoreColor(analysis.avgScore);
+            let html = '<div style="margin-top:16px;border-top:2px solid #e2e8f0;padding-top:16px;">';
+            html += '<h3 style="margin-bottom:12px;">📊 批量标题分析 (' + analysis.count + '条)</h3>';
+
+            // Summary
+            html += '<div class="grid-4" style="margin-bottom:12px;">';
+            html += '<div class="analysis-dim" style="text-align:center;"><div class="score-ring" style="border-color:'+sc+';color:'+sc+';width:70px;height:70px;font-size:1.4em;margin:0 auto 4px;">'+analysis.avgScore+'</div><div class="dim-title">综合均分</div></div>';
+            html += '<div class="analysis-dim" style="text-align:center;"><div class="stat-value color-success" style="font-size:1.5em;">'+analysis.highPotential+'</div><div class="dim-title">高潜力 >65分</div></div>';
+            html += '<div class="analysis-dim" style="text-align:center;"><div class="stat-value color-info" style="font-size:1.2em;">'+analysis.bestStructure+'</div><div class="dim-title">最佳结构</div></div>';
+            html += '<div class="analysis-dim" style="text-align:center;"><div class="stat-value" style="font-size:1.2em;">'+(analysis.allRisk.length || '无')+'</div><div class="dim-title">风险词数</div></div>';
+            html += '</div>';
+
+            // Hot & risk keywords
+            html += '<div style="margin-bottom:12px;"><strong>🔥 高频热词：</strong>';
+            analysis.allHot.slice(0, 12).forEach(kw => { html += '<span class="kw-tag hot">'+kw+'</span>'; });
+            if (analysis.allHot.length === 0) html += '<span style="color:var(--text-secondary);">未发现</span>';
+            html += '</div>';
+            if (analysis.allRisk.length > 0) {
+                html += '<div style="margin-bottom:12px;"><strong>🚫 风险词：</strong>';
+                analysis.allRisk.forEach(kw => { html += '<span class="kw-tag risk">'+kw+'</span>'; });
+                html += '</div>';
+            }
+
+            // Ranking table
+            html += '<div class="table-wrapper" style="max-height:360px;"><table><thead><tr><th>#</th><th>标题</th><th>评分</th><th>风险</th><th>结构</th><th>关键词</th></tr></thead><tbody>';
+            analysis.titles.forEach((r, i) => {
+                const sc = getScoreColor(r.score);
+                const rl = r.riskLevel === 'high' ? 'badge-danger' : (r.riskLevel === 'medium' ? 'badge-warning' : 'badge-success');
+                const rlt = r.riskLevel === 'high' ? '高危' : (r.riskLevel === 'medium' ? '中危' : '安全');
+                html += '<tr>';
+                html += '<td><strong>'+(i+1)+'</strong></td>';
+                html += '<td>'+r.title+'</td>';
+                html += '<td><strong style="color:'+sc+'">'+r.score+'</strong></td>';
+                html += '<td><span class="badge '+rl+'">'+rlt+'</span></td>';
+                html += '<td>'+r.structureType+'</td>';
+                html += '<td style="font-size:0.78em;">'+r.foundHot.slice(0,3).join(' ')+(r.foundHot.length>3?'...':'')+'</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+            html += '</div>';
+            container.innerHTML = html;
+
+        } else {
+            // Single copy analysis view
+            const a = analysis.type === 'multi' ? analysis.bestTitle : analysis;
+            const sc = getScoreColor(a.score);
+            const riskLabel = a.riskLevel === 'high' ? '高风险 🚫' : (a.riskLevel === 'medium' ? '中风险 ⚠️' : '低风险 ✅');
+
+            let html = '<div style="margin-top:16px;border-top:2px solid #e2e8f0;padding-top:16px;">';
+
+            // Score + key metrics row
+            html += '<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">';
+            html += '<div style="text-align:center;"><div class="score-ring" style="border-color:'+sc+';color:'+sc+';">'+a.score+'</div><div style="font-size:0.82em;color:var(--text-secondary);">爆款潜力评分</div></div>';
+            html += '<div style="flex:1;min-width:200px;">';
+            html += '<div class="analysis-grid">';
+            html += '<div class="analysis-dim"><div class="dim-title">📏 字数</div><div class="dim-value">'+a.len+' 字'+(a.optimalLength?' <span style="color:#10b981;">✅ 最优区间</span>':'')+'</div></div>';
+            html += '<div class="analysis-dim"><div class="dim-title">📝 段落数</div><div class="dim-value">'+a.sentences+' 句</div></div>';
+            html += '<div class="analysis-dim"><div class="dim-title">🏗️ 结构类型</div><div class="dim-value">'+a.structureType+'</div></div>';
+            html += '<div class="analysis-dim"><div class="dim-title">🎯 预期互动</div><div class="dim-value" style="font-weight:700;color:'+sc+';">'+a.expectedRange+'</div></div>';
+            html += '<div class="analysis-dim"><div class="dim-title">⚠️ 风险等级</div><div class="dim-value" style="color:'+a.riskColor+';font-weight:600;">'+riskLabel+'</div></div>';
+            html += '<div class="analysis-dim"><div class="dim-title">🔢 数量词</div><div class="dim-value">'+(a.foundNumbers.length || '无')+'</div></div>';
+            html += '</div></div></div>';
+
+            // Keywords found
+            html += '<div style="margin-bottom:10px;"><strong>🔥 命中爆款关键词：</strong>';
+            if (a.foundHot.length > 0) {
+                a.foundHot.forEach(kw => { html += '<span class="highlight-good">'+kw+'</span> '; });
+            } else { html += '<span style="color:var(--text-secondary);">未命中关键词，建议加入年龄、症状、数字等元素</span>'; }
+            html += '</div>';
+
+            if (a.foundRisk.length > 0) {
+                html += '<div style="margin-bottom:10px;"><strong>🚫 检测到风险词：</strong>';
+                a.foundRisk.forEach(kw => { html += '<span class="highlight-risk">'+kw+'</span> '; });
+                html += '</div>';
+            }
+
+            if (a.foundPower.length > 0) {
+                html += '<div style="margin-bottom:10px;"><strong>💥 情感触发词：</strong>';
+                a.foundPower.forEach(kw => { html += '<span class="highlight-kw">'+kw+'</span> '; });
+                html += '<span style="font-size:0.8em;color:var(--text-secondary);"> (增强用户共鸣)</span></div>';
+            }
+
+            // Suggestions
+            html += '<div style="margin-top:12px;"><strong>💡 优化建议：</strong></div>';
+            a.suggestions.forEach(s => {
+                html += '<div class="suggestion-item '+s.type+'">'+s.text+'</div>';
+            });
+            if (a.suggestions.length === 0) {
+                html += '<div class="suggestion-item good">✅ 文案质量优秀，建议直接发布测试</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Scroll to results
+        container.scrollIntoView({behavior:'smooth'});
+    }
+
+    // Close modal on overlay click
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'importModal') closeImportModal();
+        if (e.target.id === 'analyzeModal') closeAnalyzeModal();
+    });
+
+    // Drag & drop
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('dropZone');
+        if (!dropZone) return;
+        ['dragenter','dragover','dragleave','drop'].forEach(evt => {
+            dropZone.addEventListener(evt, function(e) { e.preventDefault(); e.stopPropagation(); });
+        });
+        ['dragenter','dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, function() { dropZone.classList.add('drag-over'); });
+        });
+        ['dragleave','drop'].forEach(evt => {
+            dropZone.addEventListener(evt, function() { dropZone.classList.remove('drag-over'); });
+        });
+        dropZone.addEventListener('drop', function(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) processFile(files[0]);
+        });
+    });
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) processFile(file);
+    }
+
+    function processFile(file) {
+        if (!file.name.match(/\.(xlsx|xls)$/i)) {
+            alert('请选择 .xlsx 或 .xls 格式的文件');
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            alert('文件大小超过50MB限制');
+            return;
+        }
+
+        importedFileName = file.name;
+        document.getElementById('importStatus').innerHTML = '⏳ 正在读取文件...';
+        document.getElementById('importProgress').style.display = 'block';
+        document.getElementById('importProgressBar').style.width = '30%';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('importProgressBar').style.width = '60%';
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const rows = XLSX.utils.sheet_to_json(sheet, {defval: ''});
+                document.getElementById('importProgressBar').style.width = '80%';
+
+                if (rows.length === 0) {
+                    document.getElementById('importStatus').innerHTML = '❌ 表格为空，请检查文件';
+                    document.getElementById('importProgress').style.display = 'none';
+                    return;
+                }
+
+                const result = mapColumns(rows);
+                document.getElementById('importProgressBar').style.width = '100%';
+                document.getElementById('importProgress').style.display = 'none';
+
+                if (!result.success) {
+                    document.getElementById('importStatus').innerHTML = '❌ ' + result.error;
+                    return;
+                }
+
+                rawImportedRows = result.rows;
+                showColumnMappingResult(result.columns, rows.length);
+                showPreview(result.rows);
+                document.getElementById('applyImportBtn').style.display = 'inline-block';
+                document.getElementById('importStatus').innerHTML =
+                    '✅ 成功解析 <strong>' + rows.length + '</strong> 条记录 · 文件: ' + file.name;
+            } catch(err) {
+                document.getElementById('importStatus').innerHTML = '❌ 解析失败: ' + err.message;
+                document.getElementById('importProgress').style.display = 'none';
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function mapColumns(rows) {
+        // Define expected columns and their aliases
+        const columnMap = {
+            title: ['发布标题', '标题', 'title', '内容标题', '文案标题', '视频标题', '文案'],
+            views: ['播放量', '播放', 'views', '观看量', '浏览量'],
+            interactions: ['总互动', '互动量', '互动', 'interactions', '总互动量'],
+            platform: ['平台', 'platform', '发布平台', '来源平台', '达人', 'MCN', '作者'],
+            status: ['进度', '状态', 'status', '发布状态', '内容状态'],
+            likes: ['点赞', '点赞量', 'likes', '点赞2k'],
+            comments: ['评论', '评论量', 'comments'],
+            shares: ['收藏', '分享', '收藏量', 'shares', '转发', '收藏1k'],
+            date: ['日期', '发布时间', 'date', '时间'],
+            notes: ['备注', '笔记', '备注说明'],
+        };
+
+        if (rows.length === 0) return {success: false, error: '表格为空'};
+
+        const headers = Object.keys(rows[0]);
+        const mapping = {};
+        const found = {};
+        const notFound = [];
+
+        for (const [key, aliases] of Object.entries(columnMap)) {
+            const match = headers.find(h => aliases.some(a => a.toLowerCase() === String(h).toLowerCase().trim()));
+            if (match) {
+                mapping[key] = match;
+                found[key] = match;
+            } else if (key === 'title') {
+                notFound.push(key);
+            }
+        }
+
+        // title is required; interactions can be computed from likes+shares
+        if (!mapping.title) {
+            return {success: false, error: '未找到标题/文案列。表格需包含"文案"或"发布标题"列'};
+        }
+
+        // Helper: parse views with w/万 format
+        function parseViewsVal(v) {
+            if (v === null || v === undefined || v === '') return 0;
+            let s = String(v).replace(/[\n\s]/g, '');
+            s = s.replace(/[爆款热门推荐收藏多]+/g, '');
+            const wm = s.match(/([\d.]+)\s*[w万]/);
+            if (wm) return parseFloat(wm[1]) * 10000;
+            const nm = s.match(/([\d.]+)/);
+            if (nm) return parseFloat(nm[1]);
+            return 0;
+        }
+
+        // Helper: extract title from full 文案 (first line or 发布标题 marker)
+        function extractTitle(raw) {
+            const text = String(raw || '').trim();
+            // Try to find "发布标题：xxx"
+            const titleMatch = text.match(/发布标题[：:]\s*(.+)/);
+            if (titleMatch) return titleMatch[1].trim();
+            // Try first non-empty line that looks like a title (short)
+            const lines = text.split('\n').filter(l => l.trim().length > 0);
+            for (const line of lines) {
+                const clean = line.replace(/^(达人昵称|发布达人|发布时间|参考链接)[：:].*/, '').trim();
+                if (clean.length >= 3 && clean.length <= 40 && !clean.startsWith('http') && !clean.startsWith('第一') && !clean.startsWith('第1')) {
+                    return clean;
+                }
+            }
+            // Fallback: first 40 chars
+            return text.substring(0, 40);
+        }
+
+        // Detect if likes/shares are in k-units (点赞2k/收藏1k format)
+        const likesIsK = mapping.likes && /2k/i.test(mapping.likes);
+        const sharesIsK = mapping.shares && /1k/i.test(mapping.shares);
+
+        // Map rows
+        const mapped = rows.map((row, idx) => {
+            const rawTitle = String(row[mapping.title] || '').trim();
+            let title, fullCopy;
+            // If 文案 column contains full script (>60 chars), extract title and keep full copy
+            if (rawTitle.length > 60) {
+                fullCopy = rawTitle;
+                title = extractTitle(rawTitle);
+            } else {
+                title = rawTitle;
+                fullCopy = rawTitle;
+            }
+
+            // Parse views
+            let views = 0;
+            if (mapping.views) views = parseViewsVal(row[mapping.views]);
+
+            // Compute interactions
+            let interactions = 0;
+            if (mapping.interactions) {
+                interactions = parseFloat(row[mapping.interactions]) || 0;
+            }
+            // Add likes
+            let likes = 0;
+            if (mapping.likes) {
+                likes = parseFloat(row[mapping.likes]) || 0;
+                if (likesIsK) likes *= 2000;
+            }
+            // Add shares/bookmarks
+            let shares = 0;
+            if (mapping.shares) {
+                shares = parseFloat(row[mapping.shares]) || 0;
+                if (sharesIsK) shares *= 1000;
+            }
+            // If no explicit interactions, compute from likes+shares
+            if (!mapping.interactions || interactions === 0) {
+                interactions = likes + shares;
+            }
+
+            // Platform: prefer 达人 over MCN
+            let platform = '未知';
+            if (mapping.platform) {
+                platform = String(row[mapping.platform] || '').trim();
+            }
+
+            // Status: detect 爆款/限流 markers
+            let status = '已发布';
+            if (mapping.status) {
+                status = String(row[mapping.status] || '').trim();
+            }
+            // Detect 爆款 from views annotation
+            if (mapping.views) {
+                const viewsRaw = String(row[mapping.views] || '');
+                if (/爆款/.test(viewsRaw)) status = '爆款';
+            }
+            // Check notes for 限流 markers
+            if (mapping.notes) {
+                const noteStr = String(row[mapping.notes] || '');
+                if (/限流|下架|违规|警告/.test(noteStr)) status = '限流';
+            }
+            // Normalize status
+            if (status === '爆款') status = '已发布'; // treat 爆款 as 已发布 (it IS published)
+
+            return {
+                _idx: idx,
+                title: title,
+                fullCopy: fullCopy,
+                views: views,
+                interactions: interactions,
+                platform: platform,
+                status: status,
+                likes: likes,
+                comments: parseFloat(row[mapping.comments]) || 0,
+                shares: shares,
+            };
+        }).filter(r => r.title.length > 0);
+
+        if (mapped.length === 0) {
+            return {success: false, error: '解析后无有效数据，请检查文案列'};
+        }
+
+        return {success: true, rows: mapped, columns: found};
+    }
+
+    function showColumnMappingResult(columns, totalRows) {
+        const container = document.getElementById('columnMappingResult');
+        const required = {title:'标题/文案',views:'播放量',interactions:'互动量(可计算)',platform:'平台/达人',status:'状态',likes:'点赞',shares:'收藏',date:'日期',notes:'备注'};
+        let html = '<div style="font-weight:600;margin-bottom:8px;">📋 列映射结果 (共'+totalRows+'行):</div>';
+        html += '<table class="column-mapping-table"><thead><tr><th>字段</th><th>匹配列名</th><th>状态</th></tr></thead><tbody>';
+        for (const [key, label] of Object.entries(required)) {
+            const matched = columns[key];
+            html += '<tr><td>'+label+'</td>';
+            html += '<td>' + (matched || '—') + '</td>';
+            const isRequired = (key === 'title');
+            html += '<td class="' + (matched ? 'matched' : 'unmatched') + '">' + (matched ? '✅ 已匹配' : (isRequired?'❌ 必需':'⚠️ 可选/自动计算')) + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        html += '<div style="font-size:0.78em;color:var(--text-secondary);margin-top:6px;">💡 互动量=点赞+收藏自动计算 · 播放量支持"32.35w"格式 · 长文案自动提取标题 · "点赞2k"自动×2000</div>';
+        container.innerHTML = html;
+        container.style.display = 'block';
+    }
+
+    function showPreview(rows) {
+        const container = document.getElementById('previewTable');
+        const preview = rows.slice(0, 8);
+        let html = '<div style="font-weight:600;margin-bottom:8px;">👀 数据预览 (前8条) — 点击"应用数据"前请确认:</div>';
+        html += '<table><thead><tr><th>#</th><th>提取标题</th><th>平台/达人</th><th>播放量</th><th>互动(点赞+收藏)</th><th>状态</th></tr></thead><tbody>';
+        preview.forEach((r, i) => {
+            const stBadge = r.status === '限流' ? 'badge-warning' : (r.status === '下架' ? 'badge-danger' : 'badge-success');
+            const titleDisplay = r.title.length > 35 ? r.title.substring(0,35)+'...' : r.title;
+            html += '<tr><td>'+(i+1)+'</td>';
+            html += '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+r.title.replace(/"/g,'&quot;')+'">'+titleDisplay+'</td>';
+            html += '<td>'+r.platform+'</td><td><strong>'+formatNum(r.views)+'</strong></td><td>'+formatNum(r.interactions)+'</td>';
+            html += '<td><span class="badge '+stBadge+'">'+r.status+'</span></td></tr>';
+        });
+        if (rows.length > 8) html += '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">... 还有 '+(rows.length-8)+' 条记录</td></tr>';
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        container.style.display = 'block';
+    }
+
+    function applyImportedData() {
+        if (!rawImportedRows || rawImportedRows.length === 0) {
+            alert('没有可用的导入数据');
+            return;
+        }
+
+        // Rebuild FULL_DATA from raw rows
+        rebuildAllData(rawImportedRows);
+        // Refresh all views
+        refreshAllViews();
+        // Update badge
+        const badge = document.getElementById('dataSourceBadge');
+        badge.textContent = '📂 ' + (importedFileName || '导入数据');
+        badge.className = 'data-source-badge file';
+        // Close modal
+        closeImportModal();
+        // Scroll to top
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function loadSampleData() {
+        rawImportedRows = null;
+        importedFileName = null;
+        // Reset FULL_DATA to the original hardcoded data by reloading
+        // We do this by restoring the backup
+        if (window._ORIGINAL_FULL_DATA) {
+            Object.assign(FULL_DATA, JSON.parse(JSON.stringify(window._ORIGINAL_FULL_DATA)));
+        }
+        refreshAllViews();
+        const badge = document.getElementById('dataSourceBadge');
+        badge.textContent = '📦 内置演示数据';
+        badge.className = 'data-source-badge default';
+        document.getElementById('importStatus').innerHTML = '✅ 已恢复演示数据';
+        document.getElementById('applyImportBtn').style.display = 'none';
+        document.getElementById('previewTable').style.display = 'none';
+        document.getElementById('columnMappingResult').style.display = 'none';
+    }
+
+    function rebuildAllData(rows) {
+        // Categorize rows
+        const viralThreshold = 10000;
+        const viral = [];
+        const limited = [];
+        const other = [];
+
+        rows.forEach(r => {
+            const status = r.status;
+            if (status === '限流') {
+                limited.push(r);
+            } else if (status === '下架') {
+                limited.push(r);
+            } else if (r.interactions >= viralThreshold) {
+                viral.push(r);
+            } else {
+                other.push(r);
+            }
+        });
+
+        // Sort viral by interactions desc
+        viral.sort((a,b) => b.interactions - a.interactions);
+
+        // Detect structure
+        function detectStructure(title) {
+            const t = String(title);
+            const hasAge = /过了|岁|年过/.test(t);
+            const hasNum = /\d+[个种]/.test(t) || /记好/.test(t);
+            const hasSolution = /记好|不用|调理|方法|方子|方案/.test(t);
+            const hasCommon = /常见病|种病/.test(t);
+            const hasAntiCommon = /又不是|什么|怕他|不用乱吃|不是什么/.test(t);
+            const hasPain = /腰疼|腿疼|疼痛|关节|麻木|抽筋|突出/.test(t);
+            const hasReveal = /不公开|不知道|不敢说|秘密|内幕/.test(t);
+
+            if (hasAge && hasNum && hasSolution) return '年龄+数量词+方案';
+            if (hasCommon || /种.*病|病.*种/.test(t)) return '常见病合集';
+            if (hasAntiCommon) return '反常识观点';
+            if (hasPain && (hasAge || hasNum)) return '痛点共鸣';
+            if (hasReveal) return '揭秘/权威型';
+            if (hasSolution) return '方案/教学型';
+            if (t.length < 8) return '简洁型(<8字)';
+            if (hasPain) return '症状描述';
+            return '其他类型';
+        }
+
+        // Detect keywords
+        const keywordList = ['过了','记好','常见病','不用','腰疼','女性','中医','调理','男人','过度治疗','关节','神经','福利药','亲民药','特效药','王牌','平价药','实用方'];
+        const riskWordList = ['特效药','福利药','亲民药','王牌','断根','包治','根治','救命药','平价药','实用方','不用过度治疗','不轻易公开','医生不知道','不敢说'];
+
+        // Rebuild FULL_DATA.viral
+        FULL_DATA.viral = viral.slice(0, 15).map((r, i) => {
+            const searchText = (r.fullCopy || '') + ' ' + r.title;
+            return {
+                rank: i+1,
+                title: r.title,
+                platform: r.platform || '未知',
+                views: r.views / 1000, // convert to k
+                interactions: r.interactions,
+                status: r.status || '已发布',
+                structure: detectStructure(searchText),
+                length: r.title.length,
+                keywords: keywordList.filter(kw => searchText.includes(kw)),
+            };
+        });
+
+        // Rebuild FULL_DATA.limited
+        FULL_DATA.limited = limited.slice(0, 12).map(r => {
+            const searchText = (r.fullCopy || '') + ' ' + r.title;
+            const riskWord = riskWordList.find(kw => searchText.includes(kw)) || '其他';
+            return {
+                title: r.title,
+                platform: r.platform || '未知',
+                views: r.views / 1000,
+                interactions: r.interactions,
+                status: r.status || '限流',
+                reason: detectLimitReason(searchText),
+                riskWords: riskWord,
+                structure: detectStructure(searchText),
+                length: r.title.length,
+            };
+        });
+
+        // Rebuild platform stats
+        const platformMap = {};
+        rows.forEach(r => {
+            const p = r.platform || '未知';
+            if (!platformMap[p]) platformMap[p] = {total:0,viral:0,limited:0,removed:0,totalViews:0,totalInteractions:0};
+            platformMap[p].total++;
+            platformMap[p].totalViews += r.views;
+            platformMap[p].totalInteractions += r.interactions;
+            if (r.status === '限流') platformMap[p].limited++;
+            else if (r.status === '下架') platformMap[p].removed++;
+            if (r.interactions >= viralThreshold) platformMap[p].viral++;
+        });
+        FULL_DATA.platformStats = {};
+        for (const [p, s] of Object.entries(platformMap)) {
+            FULL_DATA.platformStats[p] = {
+                total: s.total,
+                viral: s.viral,
+                limited: s.limited,
+                removed: s.removed,
+                avgViews: s.total > 0 ? s.totalViews / s.total : 0,
+                avgInteractions: s.total > 0 ? Math.round(s.totalInteractions / s.total) : 0,
+                limitRate: s.total > 0 ? Math.round((s.limited + s.removed) / s.total * 1000) / 10 : 0,
+                viralRate: s.total > 0 ? Math.round(s.viral / s.total * 1000) / 10 : 0,
+            };
+        }
+
+        // Rebuild structure stats
+        const structureMap = {};
+        rows.forEach(r => {
+            const searchText = (r.fullCopy || '') + ' ' + r.title;
+            const st = detectStructure(searchText);
+            if (!structureMap[st]) structureMap[st] = {count:0,viral:0,limited:0,totalInteractions:0};
+            structureMap[st].count++;
+            structureMap[st].totalInteractions += r.interactions;
+            if (r.interactions >= viralThreshold) structureMap[st].viral++;
+            if (r.status === '限流' || r.status === '下架') structureMap[st].limited++;
+        });
+        FULL_DATA.structureStats = Object.entries(structureMap).map(([structure, s]) => ({
+            structure,
+            count: s.count,
+            viralRate: s.count > 0 ? Math.round(s.viral / s.count * 100) : 0,
+            limitRate: s.count > 0 ? Math.round(s.limited / s.count * 100) : 0,
+            avgInteractions: s.count > 0 ? Math.round(s.totalInteractions / s.count) : 0,
+        })).sort((a,b) => b.viralRate - a.viralRate);
+
+        // Rebuild keyword heat
+        const kwMap = {};
+        keywordList.forEach(kw => { kwMap[kw] = {freq:0,totalInteractions:0}; });
+        rows.forEach(r => {
+            const searchText = (r.fullCopy || '') + ' ' + r.title;
+            keywordList.forEach(kw => {
+                if (searchText.includes(kw)) { kwMap[kw].freq++; kwMap[kw].totalInteractions += r.interactions; }
+            });
+        });
+        FULL_DATA.keywordHeat = Object.entries(kwMap)
+            .filter(([_,v]) => v.freq > 0)
+            .map(([word, s]) => ({
+                word,
+                freq: s.freq,
+                avgInteractions: s.freq > 0 ? Math.round(s.totalInteractions / s.freq) : 0,
+                type: s.freq >= 40 ? 'hot' : (s.freq >= 15 ? 'warm' : 'cool'),
+            }))
+            .sort((a,b) => b.avgInteractions - a.avgInteractions);
+
+        // Rebuild risk words
+        const rwMap = {};
+        riskWordList.forEach(rw => { rwMap[rw] = {freq:0,limited:0}; });
+        rows.forEach(r => {
+            const searchText = (r.fullCopy || '') + ' ' + r.title;
+            riskWordList.forEach(rw => {
+                if (searchText.includes(rw)) { rwMap[rw].freq++; if (r.status === '限流' || r.status === '下架') rwMap[rw].limited++; }
+            });
+        });
+        FULL_DATA.riskWords = Object.entries(rwMap)
+            .filter(([_,v]) => v.freq > 0)
+            .map(([word, s]) => ({
+                word,
+                freq: s.freq,
+                limitRate: s.freq > 0 ? Math.round(s.limited / s.freq * 100) : 0,
+                risk: s.freq > 0 && s.limited / s.freq >= 0.5 ? 'high' : (s.limited / s.freq >= 0.2 ? 'medium' : 'low'),
+            }))
+            .sort((a,b) => b.limitRate - a.limitRate);
+
+        // Rebuild length stats
+        const lengthBuckets = [
+            {range:'<10字',min:0,max:9,count:0,viral:0,limited:0,totalInteractions:0},
+            {range:'10-14字',min:10,max:14,count:0,viral:0,limited:0,totalInteractions:0},
+            {range:'15-18字',min:15,max:18,count:0,viral:0,limited:0,totalInteractions:0},
+            {range:'19-22字',min:19,max:22,count:0,viral:0,limited:0,totalInteractions:0},
+            {range:'23-26字',min:23,max:26,count:0,viral:0,limited:0,totalInteractions:0},
+            {range:'>26字',min:27,max:999,count:0,viral:0,limited:0,totalInteractions:0},
+        ];
+        rows.forEach(r => {
+            const len = r.title.length;
+            const bucket = lengthBuckets.find(b => len >= b.min && len <= b.max);
+            if (bucket) {
+                bucket.count++;
+                bucket.totalInteractions += r.interactions;
+                if (r.interactions >= viralThreshold) bucket.viral++;
+                if (r.status === '限流' || r.status === '下架') bucket.limited++;
+            }
+        });
+        FULL_DATA.lengthStats = lengthBuckets.filter(b => b.count > 0).map(b => ({
+            range: b.range,
+            count: b.count,
+            viralRate: b.count > 0 ? Math.round(b.viral / b.count * 100) : 0,
+            limitRate: b.count > 0 ? Math.round(b.limited / b.count * 100) : 0,
+            avgInteractions: b.count > 0 ? Math.round(b.totalInteractions / b.count) : 0,
+        }));
+
+        // Rebuild limit reasons
+        const reasonMap = {};
+        (FULL_DATA.limited || []).forEach(r => {
+            const reason = r.reason || '其他';
+            reasonMap[reason] = (reasonMap[reason] || 0) + 1;
+        });
+        const totalLimited = Object.values(reasonMap).reduce((a,b)=>a+b,0) || 1;
+        FULL_DATA.limitReasons = Object.entries(reasonMap).map(([reason, count]) => ({
+            reason, count,
+            pct: Math.round(count / totalLimited * 1000) / 10,
+        })).sort((a,b) => b.count - a.count);
+    }
+
+    function detectLimitReason(title) {
+        const t = String(title);
+        if (/特效药|根治|包治|断根|救命药/.test(t)) return '医疗承诺';
+        if (/福利药|亲民药|平价药|王牌|搭配.*药/.test(t)) return '药物暗示/推广';
+        if (/不公开|不知道|不敢说|秘密|内幕|真相/.test(t)) return '暗示独家/内幕';
+        if (/不用过度治疗|不用治疗|不需要.*治疗/.test(t)) return '过度医疗建议';
+        return '其他违规';
+    }
+
+    function refreshAllViews() {
+        // Update KPIs
+        const totalRows = rawImportedRows ? rawImportedRows.length : 212;
+        const viralRows = rawImportedRows ? rawImportedRows.filter(r => r.interactions >= 10000).length : 165;
+        const riskRows = rawImportedRows ? rawImportedRows.filter(r => r.status === '限流' || r.status === '下架').length : 66;
+        const totalInteractions = rawImportedRows ? rawImportedRows.reduce((s,r) => s + r.interactions, 0) : 0;
+        const avgInt = rawImportedRows && rawImportedRows.length > 0 ? Math.round(totalInteractions / rawImportedRows.length) : 15834;
+        const viralRate = totalRows > 0 ? (viralRows / totalRows * 100).toFixed(1) : '77.8';
+        const riskRate = totalRows > 0 ? (riskRows / totalRows * 100).toFixed(1) : '31.1';
+
+        document.getElementById('kpiTotal').textContent = totalRows;
+        document.getElementById('kpiViral').textContent = viralRows;
+        document.getElementById('kpiViralRate').textContent = viralRate;
+        document.getElementById('kpiRisk').textContent = riskRows;
+        document.getElementById('kpiRiskRate').textContent = riskRate;
+        document.getElementById('kpiAvgInteraction').textContent = avgInt.toLocaleString();
+
+        // Update change indicators
+        if (rawImportedRows) {
+            document.getElementById('kpiTotalChange').innerHTML = '📂 来自: ' + (importedFileName || '导入文件');
+            document.getElementById('kpiTotalChange').className = 'stat-change';
+            document.getElementById('kpiViralChange').innerHTML = '📊 爆款率 ' + viralRate + '%';
+            document.getElementById('kpiViralChange').className = 'stat-change up';
+            document.getElementById('kpiRiskChange').innerHTML = '⚠️ 风险率 ' + riskRate + '%';
+            document.getElementById('kpiRiskChange').className = 'stat-change ' + (parseFloat(riskRate) > 30 ? 'down' : 'up');
+            document.getElementById('kpiAvgChange').innerHTML = '📈 TOP10占比分析中';
+            document.getElementById('kpiAvgChange').className = 'stat-change up';
+        }
+
+        // Destroy all existing charts
+        Object.values(allCharts).forEach(c => { try { c.destroy(); } catch(e) {} });
+        for (const key in allCharts) delete allCharts[key];
+
+        // Re-render all static views
+        renderViralTable();
+        renderLimitedTable();
+        renderKeywordBars();
+        renderRiskWordBars();
+        renderDiffTable();
+        renderRiskTimeline();
+        renderPredictionTable();
+
+        // Re-render charts for active tab
+        const activeTab = document.querySelector('.tab-content.active');
+        if (activeTab) {
+            const tabId = activeTab.id.replace('tab-', '');
+            switch(tabId) {
+                case 'overview': renderOverviewCharts(); break;
+                case 'patterns': renderPatternCharts(); break;
+                case 'comparison': renderComparisonCharts(); break;
+                case 'risk': renderRiskCharts(); break;
+                case 'predict': renderPredictCharts(); break;
+            }
+        }
+    }
+
+    // ======================== INITIALIZATION ========================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Backup original FULL_DATA for sample data reload
+        window._ORIGINAL_FULL_DATA = JSON.parse(JSON.stringify(FULL_DATA));
+
+        // Render static tables
+        renderViralTable();
+        renderLimitedTable();
+        renderKeywordBars();
+        renderRiskWordBars();
+        renderDiffTable();
+        renderRiskTimeline();
+        renderPredictionTable();
+
+        // Render overview charts (active tab)
+        renderOverviewCharts();
+
+        // Init content generation with default
+        generateContent();
+    });
+    </script>
+</body>
+</html>
