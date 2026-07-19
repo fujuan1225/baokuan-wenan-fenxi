@@ -45,7 +45,7 @@ def start_backend():
 
 def open_frontend():
     """打开前端界面"""
-    frontend_path = os.path.join(os.path.dirname(__file__), '增强版爆款文案分析看板.html')
+    frontend_path = os.path.join(os.path.dirname(__file__), '综合爆款限流分析看板.html')
     if os.path.exists(frontend_path):
         webbrowser.open(f'file://{os.path.abspath(frontend_path)}')
     else:
